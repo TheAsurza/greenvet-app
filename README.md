@@ -68,19 +68,7 @@ src/app/
 
 ---
 
-## 3. Justificación de Criterios de Evaluación (Rúbrica de Calificación)
-
-| Criterio | Implementación Técnica | Nivel de Logro |
-| :--- | :--- | :---: |
-| **1. TypeScript y POO** | Clase abstracta `Mascota`, herencia en `Canino`, `Felino` y `Exotico`, métodos polimórficos (`getRecomendacionesCuidado()`, `getProtocoloVacunacion()`), encapsulamiento de edad dinámica y enums fuertemente tipados. | **Sobresaliente (4 pts)** |
-| **2. Arquitectura Modular** | Separación en `CoreModule`, `SharedModule` y módulos de dominio por funcionalidad con **Lazy Loading** (`loadChildren`) en `AppRoutingModule`. | **Sobresaliente (4 pts)** |
-| **3. Componentes en Angular** | Patrón *Smart & Dumb Components*. Componente `MascotaCardComponent` 100% parametrizable con `@Input({ required: true })` y eventos emitidos mediante `@Output()`. | **Sobresaliente (4 pts)** |
-| **4. Directivas, Pipes y Bootstrap** | Pipes `TiempoRelativoPipe` y `EstadoBadgePipe`. Directiva `CitaUrgenteDirective` con manipulación de DOM segura vía `Renderer2` y `@HostListener`. Bootstrap 5 con modales, badges y grid responsivo. | **Sobresaliente (4 pts)** |
-| **5. Calidad de Código y README** | Tipado estricto (0 uso de `any`), persistencia reactiva en `localStorage` con validación de SSR (`isPlatformBrowser`), y documentación de ejecución exhaustiva. | **Sobresaliente (4 pts)** |
-
----
-
-## 4. Requisitos del Entorno
+## 3. Requisitos del Entorno
 
 Asegúrate de contar con las siguientes herramientas instaladas:
 * **Node.js:** v18.x, v20.x o v24.x (verificar con `node -v`)
@@ -89,7 +77,7 @@ Asegúrate de contar con las siguientes herramientas instaladas:
 
 ---
 
-## 5. Proceso de Instalación y Ejecución
+## 4. Proceso de Instalación y Ejecución
 
 1. **Clonar o ingresar al repositorio:**
    ```bash
@@ -116,7 +104,7 @@ Asegúrate de contar con las siguientes herramientas instaladas:
 
 ---
 
-## 6. Padrón Clínico Sembrado (Octubre 2026)
+## 5. Padrón Clínico Sembrado (Octubre 2026)
 
 La aplicación incluye un padrón masivo y realista distribuido a lo largo de todo el mes de **Octubre 2026** para evaluar el sistema de forma inmediata y fidedigna:
 * **16 Propietarios Registrados:** Con DNI peruanos reales, teléfonos, correos y domicilios en Lima.
@@ -126,7 +114,7 @@ La aplicación incluye un padrón masivo y realista distribuido a lo largo de to
 
 ---
 
-## 7. Guía de Pruebas y Casos de Uso para el Docente
+## 6. Guía de Pruebas y Casos de Uso para el Docente
 
 La aplicación cuenta con una **separación absoluta entre el entorno público para clientes y la intranet clínica interna para personal médico y administrativo**:
 
@@ -192,7 +180,7 @@ Al autenticarse, el sistema aterriza automáticamente en el **Dashboard Clínico
 
 ---
 
-## 8. Verificación de Compilación y Calidad
+## 7. Verificación de Compilación y Calidad
 
 Para ejecutar una prueba de construcción limpia y verificar que no existen errores de TypeScript ni de empaquetado:
 
