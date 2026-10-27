@@ -1,0 +1,69 @@
+<div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.65); z-index: 1070;" *ngIf="visible">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header bg-dark text-white border-0 py-3">
+        <h6 class="modal-title fw-bold d-flex align-items-center gap-2 mb-0">
+          <i class="bi bi-search text-success"></i> Buscar Dueño / Cliente
+        </h6>
+        <button type="button" class="btn-close btn-close-white" (click)="onCerrar()"></button>
+      </div>
+
+      <div class="modal-body p-3">
+        <!-- Input de búsqueda reactivo -->
+        <div class="input-group mb-3">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-search text-muted"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control bg-light border-start-0"
+            placeholder="Escribe nombre, apellido o DNI..."
+            [(ngModel)]="busquedaTexto"
+            autofocus
+          />
+          <button *ngIf="busquedaTexto" class="btn btn-light border" (click)="busquedaTexto = ''">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+
+        <!-- Lista de Resultados -->
+        <div class="list-group list-group-flush rounded-3 border" style="max-height: 320px; overflow-y: auto;">
+          <button
+            type="button"
+            class="list-group-item list-group-item-action p-3 d-flex justify-content-between align-items-center"
+            *ngFor="let p of propietariosFiltrados"
+            (click)="onSeleccionar(p)"
+          >
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge rounded-circle p-2 bg-success-subtle text-success">
+                <i class="bi bi-person-fill fs-6"></i>
+              </span>
+              <div class="text-start">
+                <div class="fw-bold text-dark mb-0">{{ p.nombreCompleto }}</div>
+                <small class="text-muted">
+                  DNI: <strong>{{ p.documentoIdentidad }}</strong> &bull; Tel: {{ p.telefono }}
+                </small>
+              </div>
+            </div>
+            <span class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 small">
+              Seleccionar
+            </span>
+          </button>
+
+          <div class="text-center py-4 text-muted small" *ngIf="propietariosFiltrados.length === 0">
+            <i class="bi bi-person-x fs-2 d-block text-secondary mb-2"></i>
+            No se encontraron clientes con "{{ busquedaTexto }}"
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+          <small class="text-muted">{{ propietariosFiltrados.length }} clientes registrados</small>
+          <button type="button" class="btn btn-link text-success text-decoration-none small p-0" (click)="onRegistrarNuevo()">
+            <i class="bi bi-person-plus me-1"></i> + Registrar nuevo cliente
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

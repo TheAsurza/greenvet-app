@@ -1,0 +1,202 @@
+<div class="admin-shell d-flex min-vh-100">
+
+  <!-- Mobile Backdrop Overlay -->
+  @if (sidebarAbierto) {
+    <div class="sidebar-backdrop d-lg-none" (click)="cerrarSidebar()"></div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- SIDEBAR LATERAL CLÍNICO (DEEP TEAL THEMATIC)                              -->
+  <!-- ========================================================================= -->
+  <aside class="admin-sidebar d-flex flex-column" [class.show-mobile]="sidebarAbierto">
+    
+    <!-- 1. Header con Branding Institucional -->
+    <div class="sidebar-brand d-flex align-items-center justify-content-between p-3 border-bottom border-light border-opacity-10">
+      <div class="d-flex align-items-center gap-2">
+        <div class="brand-avatar-box rounded-circle bg-white p-1 d-flex align-items-center justify-content-center shadow-sm">
+          <img src="logo-greenvet.jpg" alt="GreenVet Logo" class="rounded-circle" style="width: 38px; height: 38px; object-fit: contain;">
+        </div>
+        <div class="brand-text">
+          <div class="fw-bold text-white fs-6 lh-1">{{ clinicaNombre }}</div>
+          <small class="text-white-50" style="font-size: 0.75rem;">Panel Clínico Intranet</small>
+        </div>
+      </div>
+      <button type="button" class="btn btn-sm btn-link text-white-50 d-lg-none p-0" (click)="cerrarSidebar()">
+        <i class="bi bi-x-lg fs-5"></i>
+      </button>
+    </div>
+
+    <!-- 2. Menú de Navegación Estructurado -->
+    <div class="sidebar-nav flex-grow-1 overflow-y-auto py-3 px-2">
+      
+      <!-- Sección: PRINCIPAL -->
+      <div class="nav-section-title px-3 mb-1 text-white-50 text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.08em;">
+        Principal
+      </div>
+      <ul class="nav flex-column mb-3 gap-1">
+        <li class="nav-item">
+          <a
+            class="nav-link sidebar-link rounded-3 d-flex align-items-center gap-3 px-3 py-2 text-white"
+            routerLink="/admin/dashboard"
+            routerLinkActive="active-nav"
+            (click)="cerrarSidebar()"
+          >
+            <i class="bi bi-grid-1x2-fill fs-5 nav-icon"></i>
+            <span class="fw-medium">Dashboard</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Sección: CLÍNICA & PACIENTES -->
+      <div class="nav-section-title px-3 mb-1 text-white-50 text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.08em;">
+        Atención Clínica
+      </div>
+      <ul class="nav flex-column mb-3 gap-1">
+        <li class="nav-item">
+          <a
+            class="nav-link sidebar-link rounded-3 d-flex align-items-center justify-content-between px-3 py-2 text-white"
+            routerLink="/admin/citas"
+            routerLinkActive="active-nav"
+            (click)="cerrarSidebar()"
+          >
+            <div class="d-flex align-items-center gap-3">
+              <i class="bi bi-calendar2-week-fill fs-5 nav-icon"></i>
+              <span class="fw-medium">Agenda & Citas</span>
+            </div>
+            @if (citasPendientesHoy > 0) {
+              <span class="badge rounded-pill bg-warning text-dark fw-bold px-2 py-1" style="font-size: 0.75rem;">
+                {{ citasPendientesHoy }}
+              </span>
+            }
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link sidebar-link rounded-3 d-flex align-items-center gap-3 px-3 py-2 text-white"
+            routerLink="/admin/mascotas"
+            routerLinkActive="active-nav"
+            (click)="cerrarSidebar()"
+          >
+            <i class="bi bi-heart-pulse-fill fs-5 nav-icon"></i>
+            <span class="fw-medium">Pacientes & Dueños</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link sidebar-link rounded-3 d-flex align-items-center gap-3 px-3 py-2 text-white"
+            routerLink="/admin/historial"
+            routerLinkActive="active-nav"
+            (click)="cerrarSidebar()"
+          >
+            <i class="bi bi-journal-medical fs-5 nav-icon"></i>
+            <span class="fw-medium">Historial Clínico</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Tarjeta Inspiracional de Identidad -->
+      <div class="sidebar-card mx-2 mt-4 p-3 rounded-3 text-white text-center">
+        <div class="sidebar-card-icon mb-2">
+          <i class="bi bi-patch-check-fill text-warning fs-4"></i>
+        </div>
+        <p class="mb-1 small fw-bold">Cuidamos a quienes más quieres</p>
+        <span class="text-white-50" style="font-size: 0.75rem;">GreenVet Medical Core v2.4</span>
+      </div>
+
+    </div>
+
+    <!-- 3. Footer del Sidebar con Salida de Sesión -->
+    <div class="sidebar-footer p-3 border-top border-light border-opacity-10 d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <div class="user-avatar-mini rounded-circle bg-warning text-dark fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.75rem;">
+          {{ staffActual?.nombreCompleto?.charAt(0) || 'P' }}
+        </div>
+        <div class="user-meta" style="max-width: 130px;">
+          <div class="text-white small fw-bold text-truncate">{{ staffActual?.nombreCompleto }}</div>
+          <small class="text-white-50 d-block text-truncate" style="font-size: 0.75rem;">{{ staffActual?.rol }}</small>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-danger rounded-circle p-2 d-flex align-items-center justify-content-center"
+        (click)="cerrarSesion()"
+        title="Cerrar sesión de personal"
+        style="width: 34px; height: 34px;"
+      >
+        <i class="bi bi-box-arrow-right"></i>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- ÁREA PRINCIPAL: TOPBAR + CONTENIDO DINÁMICO                               -->
+  <!-- ========================================================================= -->
+  <div class="admin-main-wrapper d-flex flex-column flex-grow-1 min-vw-0">
+    
+    <!-- TOPBAR SUPERIOR -->
+    <header class="admin-topbar bg-white border-bottom px-3 px-lg-4 py-2 d-flex align-items-center justify-content-between shadow-xs">
+      
+      <!-- Izquierda: Toggle móvil y Título Contextual -->
+      <div class="d-flex align-items-center gap-3">
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm d-lg-none d-flex align-items-center justify-content-center p-2 rounded-3"
+          (click)="toggleSidebar()"
+          aria-label="Abrir menú"
+        >
+          <i class="bi bi-list fs-5"></i>
+        </button>
+
+        <div>
+          <h1 class="fs-5 fw-bold text-dark mb-0 lh-1">{{ tituloVistaActual }}</h1>
+          <small class="text-muted d-none d-sm-inline-block">{{ subtituloVistaActual }}</small>
+        </div>
+      </div>
+
+      <!-- Derecha: Fecha y Hora en vivo, Guardia Activa y Perfil Clínico -->
+      <div class="d-flex align-items-center gap-2 gap-md-3">
+        
+        <!-- Widget de Fecha y Hora en Tiempo Real -->
+        <div class="d-none d-md-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill border">
+          <i class="bi bi-calendar-event text-emerald"></i>
+          <span class="text-dark fw-medium small">{{ fechaActual | date:'EEEE, d MMMM y' }}</span>
+          <span class="text-muted opacity-50">&bull;</span>
+          <i class="bi bi-clock-history text-muted"></i>
+          <span class="badge bg-white text-dark border px-2 py-1 rounded-pill fw-bold" style="font-size: 0.75rem;">
+            {{ fechaActual | date:'HH:mm:ss' }}
+          </span>
+        </div>
+
+        <!-- Indicador de Turno / Guardia Diurna Activa -->
+        <div class="d-none d-xl-flex align-items-center gap-2 px-3 py-1 rounded-pill border" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25) !important;">
+          <span class="status-dot-pulse"></span>
+          <span class="fw-semibold text-dark" style="font-size: 0.78rem;">Turno Diurno Activo</span>
+        </div>
+
+        <!-- Avatar y Perfil de Usuario Clínico -->
+        <div class="d-flex align-items-center gap-2 ps-2 border-start">
+          <div class="position-relative">
+            <div class="user-chip-avatar rounded-circle text-white fw-bold d-flex align-items-center justify-content-center shadow-xs" style="width: 38px; height: 38px; background: linear-gradient(135deg, #0f766e, #0d9488);">
+              {{ staffActual?.nombreCompleto?.charAt(0) || 'A' }}
+            </div>
+            <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle" style="width: 10px; height: 10px;"></span>
+          </div>
+          <div class="d-none d-sm-block text-start lh-1">
+            <span class="d-block fw-bold text-dark small">{{ staffActual?.nombreCompleto }}</span>
+            <span class="text-muted" style="font-size: 0.75rem;">{{ staffActual?.rol }}</span>
+          </div>
+        </div>
+
+      </div>
+
+    </header>
+
+    <!-- ÁREA DE CONTENIDO DINÁMICO -->
+    <main class="admin-content-area flex-grow-1 p-3 p-lg-4 overflow-auto bg-light">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+
+</div>

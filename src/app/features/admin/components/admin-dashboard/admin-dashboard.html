@@ -1,0 +1,517 @@
+<div class="dashboard-container d-flex flex-column gap-4">
+
+  <!-- ========================================================================= -->
+  <!-- 1. HERO BANNER DE BIENVENIDA (GRADIENTE ESMERALDA CON ACCIONES RÁPIDAS)    -->
+  <!-- ========================================================================= -->
+  <section class="hero-welcome-card rounded-4 p-4 text-white position-relative overflow-hidden shadow-sm">
+    <div class="row align-items-center g-3 position-relative z-1">
+      <div class="col-12">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+          <div>
+            <h2 class="display-6 fw-bold mb-1 fs-3">
+              {{ saludoHorario }}, {{ staffActual?.nombreCompleto || 'Personal Clínico' }} 👋
+            </h2>
+            <div class="small text-white-50">
+              {{ staffActual?.rol || 'Equipo Médico Veterinario' }} &bull; GreenVet Core
+            </div>
+          </div>
+
+          <!-- Selector Híbrido: Guardia General vs Mis Pacientes Asignados -->
+          <div class="btn-group p-1 bg-black bg-opacity-25 rounded-pill border border-white border-opacity-25 shadow-sm" role="group">
+            <button
+              type="button"
+              class="btn btn-sm rounded-pill px-3 py-1 border-0 transition-all d-flex align-items-center gap-2"
+              [ngClass]="modoVistaDashboard === 'GENERAL' ? 'bg-white text-dark fw-bold shadow-sm' : 'text-white'"
+              (click)="modoVistaDashboard = 'GENERAL'">
+              <i class="bi bi-hospital" [ngClass]="modoVistaDashboard === 'GENERAL' ? 'text-success' : 'text-white-50'"></i>
+              <span [ngClass]="modoVistaDashboard === 'GENERAL' ? 'text-dark' : 'text-white'">Guardia General</span>
+              <span class="badge rounded-pill" [ngClass]="modoVistaDashboard === 'GENERAL' ? 'bg-success text-white' : 'bg-white bg-opacity-25 text-white'">
+                {{ citasHoy.length }}
+              </span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm rounded-pill px-3 py-1 border-0 transition-all d-flex align-items-center gap-2"
+              [ngClass]="modoVistaDashboard === 'MIS_CITAS' ? 'bg-white text-dark fw-bold shadow-sm' : 'text-white'"
+              (click)="modoVistaDashboard = 'MIS_CITAS'">
+              <i class="bi bi-person-badge-fill" [ngClass]="modoVistaDashboard === 'MIS_CITAS' ? 'text-success' : 'text-white-50'"></i>
+              <span [ngClass]="modoVistaDashboard === 'MIS_CITAS' ? 'text-dark' : 'text-white'">Mis Pacientes</span>
+              <span class="badge rounded-pill" [ngClass]="modoVistaDashboard === 'MIS_CITAS' ? 'bg-success text-white' : 'bg-white bg-opacity-25 text-white'">
+                {{ misCitasHoy.length }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Texto Contextual Dinámico según el modo seleccionado -->
+        <p class="mb-3 text-white-50 fs-6" *ngIf="modoVistaDashboard === 'GENERAL'">
+          Estado operativo de la clínica hoy: 
+          <strong class="text-white">{{ citasPendientesHoy }} cita{{ citasPendientesHoy === 1 ? '' : 's' }} pendiente{{ citasPendientesHoy === 1 ? '' : 's' }}</strong>, 
+          <strong class="text-white">{{ urgenciasHoy }} urgencia{{ urgenciasHoy === 1 ? '' : 's' }} activa{{ urgenciasHoy === 1 ? '' : 's' }}</strong> y 
+          <strong class="text-white">{{ atencionesMes }} atenciones registradas</strong> en el mes.
+        </p>
+
+        <p class="mb-3 text-white-50 fs-6" *ngIf="modoVistaDashboard === 'MIS_CITAS'">
+          <ng-container *ngIf="misCitasHoy.length > 0">
+            Tienes <strong class="text-white">{{ misCitasPendientesHoy }} cita{{ misCitasPendientesHoy === 1 ? '' : 's' }} pendiente{{ misCitasPendientesHoy === 1 ? '' : 's' }} asignada{{ misCitasPendientesHoy === 1 ? '' : 's' }}</strong> a tu turno hoy
+            <span *ngIf="misUrgenciasHoy > 0">, incluyendo <strong class="text-warning">{{ misUrgenciasHoy }} urgencia prioritaria</strong></span>
+            de un total de <strong class="text-white">{{ misCitasHoy.length }} paciente{{ misCitasHoy.length === 1 ? '' : 's' }}</strong> en tu agenda.
+          </ng-container>
+          <ng-container *ngIf="misCitasHoy.length === 0">
+            No tienes citas asignadas directamente a ti hoy. Tienes acceso libre a la <strong class="text-white">Guardia General</strong> para atender cualquier paciente en consultorio.
+          </ng-container>
+        </p>
+
+        <!-- Botones de Acción Inmediata (abren modales directamente) -->
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <button type="button" class="btn btn-warning text-dark fw-bold rounded-pill px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2" (click)="irACitas(true)" title="Abrir modal para agendar cita">
+            <i class="bi bi-calendar-plus-fill"></i>
+            <span>Agendar Cita</span>
+          </button>
+
+          <button type="button" class="btn btn-outline-light rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2" (click)="irAHistorial(true)" title="Abrir modal para registrar nueva atención clínica">
+            <i class="bi bi-journal-plus"></i>
+            <span>Nueva Atención</span>
+          </button>
+
+          <button type="button" class="btn btn-outline-light rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2" (click)="irAMascotas(true)" title="Abrir modal para registrar nuevo paciente">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Registrar Paciente</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 2. TARJETAS KPI PRINCIPALES (GRADIENTES VIBRANTES CON MARCAS DE AGUA)     -->
+  <!-- ========================================================================= -->
+  <section class="kpi-grid">
+    <div class="row g-3">
+      
+      <!-- KPI 1: Citas de Hoy (Verde Menta / Teal) -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-teal p-3 rounded-4 position-relative overflow-hidden shadow-sm h-100 cursor-pointer" (click)="irACitas()">
+          <div class="kpi-watermark-icon">
+            <i class="bi bi-calendar2-check-fill"></i>
+          </div>
+          <span class="text-white-50 small fw-semibold text-uppercase">Citas de hoy</span>
+          <div class="d-flex align-items-baseline gap-2 my-1">
+            <h3 class="display-6 fw-bold text-white mb-0">{{ citasHoy.length }}</h3>
+            <span class="badge bg-white text-success rounded-pill px-2 py-1 small fw-bold">
+              {{ citasPendientesHoy }} por atender
+            </span>
+          </div>
+          <a class="text-white text-decoration-none small fw-semibold d-inline-flex align-items-center gap-1 mt-2">
+            <span>Ver agenda</span> <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- KPI 2: Ventas y Atenciones (Verde Esmeralda) -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-emerald p-3 rounded-4 position-relative overflow-hidden shadow-sm h-100 cursor-pointer" (click)="irAHistorial()">
+          <div class="kpi-watermark-icon">
+            <i class="bi bi-cash-coin"></i>
+          </div>
+          <span class="text-white-50 small fw-semibold text-uppercase">Ventas del mes</span>
+          <div class="d-flex align-items-baseline gap-2 my-1">
+            <h3 class="display-6 fw-bold text-white mb-0">S/ 2,754.00</h3>
+          </div>
+          <div class="d-flex align-items-center gap-1 text-white-50 small">
+            <span class="text-warning fw-bold"><i class="bi bi-arrow-up-short"></i>+42%</span>
+            <span>vs mes anterior</span>
+          </div>
+          <a class="text-white text-decoration-none small fw-semibold d-inline-flex align-items-center gap-1 mt-2">
+            <span>Ver ingresos</span> <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- KPI 3: Mascotas Registradas (Naranja Cálido) -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-orange p-3 rounded-4 position-relative overflow-hidden shadow-sm h-100 cursor-pointer" (click)="irAMascotas()">
+          <div class="kpi-watermark-icon">
+            <i class="bi bi-heart-fill"></i>
+          </div>
+          <span class="text-white-50 small fw-semibold text-uppercase">Mascotas activas</span>
+          <div class="d-flex align-items-baseline gap-2 my-1">
+            <h3 class="display-6 fw-bold text-white mb-0">{{ pacientesTotales }}</h3>
+            <span class="badge bg-white text-warning rounded-pill px-2 py-1 small fw-bold">
+              {{ propietariosTotales }} dueños
+            </span>
+          </div>
+          <a class="text-white text-decoration-none small fw-semibold d-inline-flex align-items-center gap-1 mt-2">
+            <span>Ver padrón</span> <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- KPI 4: Urgencias / Triaje (Coral Rojizo) -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-coral p-3 rounded-4 position-relative overflow-hidden shadow-sm h-100 cursor-pointer" (click)="irACitas()">
+          <div class="kpi-watermark-icon">
+            <i class="bi bi-shield-exclamation"></i>
+          </div>
+          <span class="text-white-50 small fw-semibold text-uppercase">Urgencias del día</span>
+          <div class="d-flex align-items-baseline gap-2 my-1">
+            <h3 class="display-6 fw-bold text-white mb-0">{{ urgenciasHoy }}</h3>
+            <span class="badge bg-white text-danger rounded-pill px-2 py-1 small fw-bold">
+              Triaje activo
+            </span>
+          </div>
+          <a class="text-white text-decoration-none small fw-semibold d-inline-flex align-items-center gap-1 mt-2">
+            <span>Atender urgencias</span> <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 3. FILA SECUNDARIA DE INDICADORES RÁPIDOS                                 -->
+  <!-- ========================================================================= -->
+  <section class="secondary-kpis">
+    <div class="row g-3">
+      
+      <div class="col-12 col-sm-4">
+        <div class="card border-0 shadow-xs p-3 rounded-4 bg-white d-flex flex-row align-items-center gap-3">
+          <div class="rounded-circle bg-primary-subtle text-primary p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+            <i class="bi bi-capsule fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-medium">Vacunas por aplicar</div>
+            <div class="fs-4 fw-bold text-dark">{{ citasVacunas }} <span class="fs-6 fw-normal text-muted">pacientes</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-4">
+        <div class="card border-0 shadow-xs p-3 rounded-4 bg-white d-flex flex-row align-items-center gap-3">
+          <div class="rounded-circle bg-warning-subtle text-warning p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+            <i class="bi bi-hourglass-split fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-medium">Pendientes de confirmación</div>
+            <div class="fs-4 fw-bold text-dark">{{ citasPendientesConfirmar }} <span class="fs-6 fw-normal text-muted">turnos</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-4">
+        <div class="card border-0 shadow-xs p-3 rounded-4 bg-white d-flex flex-row align-items-center gap-3">
+          <div class="rounded-circle bg-success-subtle text-success p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+            <i class="bi bi-clipboard2-check fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-medium">Atenciones concluidas</div>
+            <div class="fs-4 fw-bold text-dark">{{ atencionesMes }} <span class="fs-6 fw-normal text-muted">expedientes</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 4. VISUALIZACIÓN DE DATOS (GRÁFICO DE TENDENCIA + DONUT POR ESPECIE)       -->
+  <!-- ========================================================================= -->
+  <section class="charts-row">
+    <div class="row g-3">
+      
+      <!-- Gráfico 1: Actividad y Tendencia de los últimos 6 meses -->
+      <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+              <h3 class="fs-6 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-bar-chart-line-fill text-success"></i>
+                <span>Atenciones de los últimos 6 meses</span>
+              </h3>
+              <small class="text-muted">Evolución de citas y consultas atendidas</small>
+            </div>
+            <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-3 py-2 rounded-pill fw-bold">
+              S/ 8,347.00 Total
+            </span>
+          </div>
+
+          <!-- SVG Visual Chart -->
+          <div class="chart-wrapper mt-2">
+            <svg viewBox="0 0 500 200" class="w-100" style="max-height: 220px;" preserveAspectRatio="xMidYMid meet">
+              <!-- Grid horizontal lines -->
+              <line x1="40" y1="30" x2="480" y2="30" stroke="#f1f5f9" stroke-width="1" />
+              <line x1="40" y1="80" x2="480" y2="80" stroke="#f1f5f9" stroke-width="1" />
+              <line x1="40" y1="130" x2="480" y2="130" stroke="#f1f5f9" stroke-width="1" />
+              <line x1="40" y1="170" x2="480" y2="170" stroke="#e2e8f0" stroke-width="1.5" />
+
+              <!-- Y-Axis Labels -->
+              <text x="10" y="35" fill="#94a3b8" font-size="10">3,000</text>
+              <text x="10" y="85" fill="#94a3b8" font-size="10">2,000</text>
+              <text x="10" y="135" fill="#94a3b8" font-size="10">1,000</text>
+              <text x="25" y="173" fill="#94a3b8" font-size="10">0</text>
+
+              <!-- Bars (May, Jun, Jul, Ago, Sep, Oct) -->
+              <!-- Mayo -->
+              <rect x="65" y="145" width="30" height="25" rx="6" fill="#a7f3d0" />
+              <!-- Junio -->
+              <rect x="135" y="115" width="30" height="55" rx="6" fill="#a7f3d0" />
+              <!-- Julio -->
+              <rect x="205" y="90" width="30" height="80" rx="6" fill="#6ee7b7" />
+              <!-- Agosto -->
+              <rect x="275" y="130" width="30" height="40" rx="6" fill="#a7f3d0" />
+              <!-- Septiembre -->
+              <rect x="345" y="85" width="30" height="85" rx="6" fill="#6ee7b7" />
+              <!-- Octubre (Mes actual destacado) -->
+              <rect x="415" y="55" width="30" height="115" rx="6" fill="#10b981" />
+
+              <!-- Smooth Trend Line -->
+              <polyline
+                fill="none"
+                stroke="#0f766e"
+                stroke-width="3"
+                points="80,145 150,115 220,90 290,130 360,85 430,55"
+              />
+
+              <!-- Trend Dots -->
+              <circle cx="80" cy="145" r="4" fill="#ffffff" stroke="#0f766e" stroke-width="2" />
+              <circle cx="150" cy="115" r="4" fill="#ffffff" stroke="#0f766e" stroke-width="2" />
+              <circle cx="220" cy="90" r="4" fill="#ffffff" stroke="#0f766e" stroke-width="2" />
+              <circle cx="290" cy="130" r="4" fill="#ffffff" stroke="#0f766e" stroke-width="2" />
+              <circle cx="360" cy="85" r="4" fill="#ffffff" stroke="#0f766e" stroke-width="2" />
+              <circle cx="430" cy="55" r="5" fill="#f59e0b" stroke="#0f766e" stroke-width="2" />
+
+              <!-- X-Axis Labels -->
+              <text x="70" y="190" fill="#64748b" font-size="11" font-weight="600">May</text>
+              <text x="140" y="190" fill="#64748b" font-size="11" font-weight="600">Jun</text>
+              <text x="210" y="190" fill="#64748b" font-size="11" font-weight="600">Jul</text>
+              <text x="280" y="190" fill="#64748b" font-size="11" font-weight="600">Ago</text>
+              <text x="350" y="190" fill="#64748b" font-size="11" font-weight="600">Sep</text>
+              <text x="420" y="190" fill="#0f766e" font-size="11" font-weight="bold">Oct 26</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfico 2: Donut Chart de Pacientes por Especie (Cálculo POO Real) -->
+      <div class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100 d-flex flex-column justify-content-between">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div>
+              <h3 class="fs-6 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-pie-chart-fill text-warning"></i>
+                <span>Pacientes por especie</span>
+              </h3>
+              <small class="text-muted">Distribución polimórfica en clínica</small>
+            </div>
+            <span class="badge bg-light text-muted border px-2 py-1 small">
+              {{ pacientesTotales }} registrados
+            </span>
+          </div>
+
+          <!-- SVG Donut Chart -->
+          <div class="d-flex align-items-center justify-content-center my-3">
+            <div class="position-relative" style="width: 170px; height: 170px;">
+              <svg viewBox="0 0 180 180" width="170" height="170" class="donut-chart-svg">
+                <!-- Base track -->
+                <circle cx="90" cy="90" r="70" fill="transparent" stroke="#f1f5f9" stroke-width="22" />
+
+                <!-- Caninos (Verde Esmeralda) -->
+                <circle
+                  cx="90" cy="90" r="70"
+                  fill="transparent"
+                  stroke="#10b981"
+                  stroke-width="22"
+                  [attr.stroke-dasharray]="donaSvg.dashCaninos + ' ' + (440 - donaSvg.dashCaninos)"
+                  [attr.stroke-dashoffset]="donaSvg.offsetCaninos"
+                  stroke-linecap="round"
+                />
+
+                <!-- Felinos (Naranja Cálido) -->
+                <circle
+                  cx="90" cy="90" r="70"
+                  fill="transparent"
+                  stroke="#f97316"
+                  stroke-width="22"
+                  [attr.stroke-dasharray]="donaSvg.dashFelinos + ' ' + (440 - donaSvg.dashFelinos)"
+                  [attr.stroke-dashoffset]="donaSvg.offsetFelinos"
+                  stroke-linecap="round"
+                />
+
+                <!-- Exóticos (Azul Índigo) -->
+                <circle
+                  cx="90" cy="90" r="70"
+                  fill="transparent"
+                  stroke="#6366f1"
+                  stroke-width="22"
+                  [attr.stroke-dasharray]="donaSvg.dashExoticos + ' ' + (440 - donaSvg.dashExoticos)"
+                  [attr.stroke-dashoffset]="donaSvg.offsetExoticos"
+                  stroke-linecap="round"
+                />
+              </svg>
+
+              <!-- Donut Center Badge -->
+              <div class="position-absolute top-50 start-50 translate-middle text-center lh-1">
+                <span class="d-block display-6 fw-bold text-dark fs-3 mb-1">{{ pacientesTotales }}</span>
+                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.65rem;">Mascotas</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div class="d-flex flex-wrap justify-content-center gap-3 pt-2 border-top">
+            <div class="d-flex align-items-center gap-1 small">
+              <span class="legend-dot bg-success"></span>
+              <span class="text-muted">Caninos:</span>
+              <strong class="text-dark">{{ especies.caninos }} ({{ especies.porcCaninos }}%)</strong>
+            </div>
+            <div class="d-flex align-items-center gap-1 small">
+              <span class="legend-dot bg-warning"></span>
+              <span class="text-muted">Felinos:</span>
+              <strong class="text-dark">{{ especies.felinos }} ({{ especies.porcFelinos }}%)</strong>
+            </div>
+            <div class="d-flex align-items-center gap-1 small">
+              <span class="legend-dot bg-primary"></span>
+              <span class="text-muted">Exóticos:</span>
+              <strong class="text-dark">{{ especies.exoticos }} ({{ especies.porcExoticos }}%)</strong>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 5. MESA OPERATIVA: AGENDA INMEDIATA DE HOY (DIRECTIVA + PIPES)            -->
+  <!-- ========================================================================= -->
+  <section class="agenda-table-section card border-0 shadow-sm p-4 rounded-4 bg-white">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-3">
+      <div>
+        <h3 class="fs-6 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+          <i class="bi bi-clock-history text-success"></i>
+          <span>Agenda Inmediata de Pacientes</span>
+          <span class="badge rounded-pill border small" [ngClass]="modoVistaDashboard === 'GENERAL' ? 'bg-light text-secondary' : 'bg-success-subtle text-success'">
+            {{ modoVistaDashboard === 'GENERAL' ? 'Guardia General' : 'Mis Pacientes Asignados' }}
+          </span>
+        </h3>
+        <small class="text-muted" *ngIf="modoVistaDashboard === 'GENERAL'">
+          Todos los turnos programados en la clínica para atención en consultorio
+        </small>
+        <small class="text-muted" *ngIf="modoVistaDashboard === 'MIS_CITAS'">
+          Pacientes asignados directamente a tu consulta médica
+        </small>
+      </div>
+
+      <a routerLink="/admin/citas" class="btn btn-outline-success btn-sm rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1">
+        <span>Ver Calendario Completo</span>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+    </div>
+
+    <!-- Tabla Responsiva de Citas del Día -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase text-muted">
+          <tr>
+            <th scope="col" style="width: 100px;">Horario</th>
+            <th scope="col">Paciente</th>
+            <th scope="col">Dueño / Contacto</th>
+            <th scope="col">Veterinario</th>
+            <th scope="col">Motivo de Consulta</th>
+            <th scope="col">Estado</th>
+            <th scope="col" class="text-end">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cita of citasFiltradasDashboard; track cita.id) {
+            <tr [appCitaUrgente]="cita.motivo">
+              
+              <!-- Horario -->
+              <td class="fw-bold text-dark">
+                <i class="bi bi-clock text-muted me-1"></i>{{ cita.fechaHora | date:'HH:mm' }}
+              </td>
+
+              <!-- Paciente -->
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="pet-avatar rounded-circle bg-light border p-1 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    🐾
+                  </div>
+                  <div>
+                    <strong class="text-dark d-block">{{ cita.mascotaNombre }}</strong>
+                    <small class="text-muted">{{ cita.especie }}</small>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Dueño -->
+              <td>
+                <span class="small fw-semibold text-dark">{{ cita.propietarioNombre }}</span>
+              </td>
+
+              <!-- Veterinario Asignado -->
+              <td>
+                <span class="small text-secondary">{{ cita.veterinarioAsignado }}</span>
+              </td>
+
+              <!-- Motivo -->
+              <td>
+                <span class="badge bg-light text-dark border">
+                  {{ cita.motivo }}
+                </span>
+              </td>
+
+              <!-- Estado (Pipe personalizado con clases nítidas de contraste) -->
+              <td>
+                <span class="badge rounded-pill px-2 py-1" [ngClass]="(cita.estado | estadoBadge).clase">
+                  <i class="bi me-1" [ngClass]="(cita.estado | estadoBadge).icono"></i>
+                  {{ (cita.estado | estadoBadge).etiqueta }}
+                </span>
+              </td>
+
+              <!-- Acción: Abrir Atención Directa -->
+              <td class="text-end">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1"
+                  (click)="atenderCita(cita)"
+                  title="Abrir expediente y registrar atención para este paciente"
+                >
+                  <i class="bi bi-clipboard2-pulse"></i>
+                  <span>Atender</span>
+                </button>
+              </td>
+
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center py-5 text-muted">
+                <i class="bi bi-calendar-check fs-2 text-success opacity-75 d-block mb-2"></i>
+                <h6 class="fw-bold text-dark" *ngIf="modoVistaDashboard === 'MIS_CITAS'">
+                  No tienes citas asignadas directamente para hoy
+                </h6>
+                <h6 class="fw-bold text-dark" *ngIf="modoVistaDashboard === 'GENERAL'">
+                  No hay citas registradas para este turno
+                </h6>
+                <p class="small text-muted mb-3" *ngIf="modoVistaDashboard === 'MIS_CITAS'">
+                  La clínica tiene {{ citasHoy.length }} paciente(s) programado(s) en la guardia general que puedes atender.
+                </p>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-success rounded-pill px-3"
+                  *ngIf="modoVistaDashboard === 'MIS_CITAS'"
+                  (click)="modoVistaDashboard = 'GENERAL'">
+                  <i class="bi bi-hospital me-1"></i> Ver Guardia General ({{ citasHoy.length }})
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+</div>

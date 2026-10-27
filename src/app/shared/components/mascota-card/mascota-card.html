@@ -1,0 +1,86 @@
+<div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden mascota-card card-hoverable" (click)="onVerDetalle()" title="Haz clic para ver la ficha médica completa">
+  <div class="card-header bg-white border-bottom border-light py-3 d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-2">
+      <!-- Icono de Especie -->
+      <span class="badge rounded-circle p-2"
+        [ngClass]="mascota.especie === EspecieMascota.CANINO ? 'bg-success-subtle text-success' : (mascota.especie === EspecieMascota.FELINO ? 'bg-warning-subtle text-warning-emphasis' : 'bg-primary-subtle text-primary')">
+        <i class="bi fs-5"
+          [ngClass]="mascota.especie === EspecieMascota.CANINO ? 'bi-shield-shaded' : (mascota.especie === EspecieMascota.FELINO ? 'bi-moon-stars-fill' : 'bi-stars')"></i>
+      </span>
+
+      <div>
+        <h5 class="card-title mb-1 fw-bold text-dark">{{ mascota.nombre }}</h5>
+        <!-- Tríada de badges homogénea para Especie, Raza y Sexo -->
+        <div class="d-flex flex-wrap gap-1 align-items-center">
+          <span class="badge px-2 py-1 small fw-semibold"
+            [ngClass]="mascota.especie === EspecieMascota.CANINO ? 'bg-success-subtle text-success border border-success-subtle' : (mascota.especie === EspecieMascota.FELINO ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-primary-subtle text-primary border border-primary-subtle')">
+            {{ mascota.especie }}
+          </span>
+          <span class="badge bg-white text-dark border border-secondary-subtle px-2 py-1 fw-semibold small">
+            {{ mascota.raza }}
+          </span>
+          <span class="badge px-2 py-1 small fw-semibold"
+            [ngClass]="mascota.sexo === SexoMascota.MACHO ? 'bg-info-subtle text-info-emphasis border border-info' : 'bg-danger-subtle text-danger-emphasis border border-danger-subtle'">
+            <i class="bi me-1" [ngClass]="mascota.sexo === SexoMascota.MACHO ? 'bi-gender-male' : 'bi-gender-female'"></i>
+            {{ mascota.sexo }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <span class="badge rounded-pill bg-dark-subtle text-dark-emphasis px-3 py-2 fw-semibold">
+      {{ mascota.edad }} {{ mascota.edad === 1 ? 'año' : 'años' }}
+    </span>
+  </div>
+
+  <div class="card-body">
+    <!-- Propietario -->
+    <div class="mb-3 p-2 bg-light-subtle rounded-3 border">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <i class="bi bi-person-fill text-success"></i>
+        <span class="fw-semibold small text-truncate">{{ mascota.propietario.nombreCompleto }}</span>
+      </div>
+      <div class="d-flex align-items-center gap-2 small text-muted">
+        <i class="bi bi-telephone-fill"></i>
+        <span>{{ mascota.propietario.telefono }}</span>
+      </div>
+    </div>
+
+    <!-- Parámetros físicos -->
+    <div class="row g-2 text-center mb-3">
+      <div class="col-6">
+        <div class="p-2 border rounded-3 bg-body-tertiary">
+          <small class="text-muted d-block">Peso actual</small>
+          <strong class="text-success">{{ mascota.pesoActualKg }} kg</strong>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="p-2 border rounded-3 bg-body-tertiary">
+          <small class="text-muted d-block">Esterilizado</small>
+          <strong [ngClass]="mascota.fichaClinica.esterilizado ? 'text-success' : 'text-secondary'">
+            {{ mascota.fichaClinica.esterilizado ? 'Sí' : 'No' }}
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Polimorfismo en acción: Recomendación de cuidado preventivo -->
+    <div class="alert alert-success py-2 px-3 small mb-0 rounded-3 bg-success-subtle border border-success-subtle">
+      <div class="d-flex align-items-center gap-1 fw-bold text-success-emphasis mb-1">
+        <i class="bi bi-shield-check"></i> Cuidado preventivo:
+      </div>
+      <p class="mb-0 text-dark fst-italic">{{ mascota.getRecomendacionesCuidado() }}</p>
+    </div>
+  </div>
+
+  <div class="card-footer bg-white border-top-0 pt-0 pb-3" *ngIf="mostrarAcciones">
+    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+      <button type="button" class="btn btn-outline-success btn-sm rounded-pill flex-fill" (click)="$event.stopPropagation(); onVerHistorial()">
+        <i class="bi bi-clock-history me-1"></i> Historial
+      </button>
+      <button type="button" class="btn btn-success btn-sm rounded-pill flex-fill" (click)="$event.stopPropagation(); onAgendarCita()">
+        <i class="bi bi-calendar-plus me-1"></i> Agendar
+      </button>
+    </div>
+  </div>
+</div>

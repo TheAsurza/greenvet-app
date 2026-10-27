@@ -1,0 +1,251 @@
+.modal.fade.show {
+  display: block;
+  backdrop-filter: blur(2px);
+}
+
+// Master-Detail Container
+.master-detail-container {
+  min-height: 720px;
+}
+
+// Feed de Pacientes Paginado (Sin scrollbar interno)
+.pacientes-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.paciente-item {
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  min-height: 82px;
+
+  &:hover {
+    border-color: #99f6e4;
+    background-color: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.08);
+  }
+
+  &.is-selected {
+    border-color: #0f766e;
+    border-width: 2px;
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, #ffffff 100%);
+    box-shadow: 0 4px 14px rgba(15, 118, 110, 0.14);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background: #0f766e;
+      border-top-left-radius: 1rem;
+      border-bottom-left-radius: 1rem;
+    }
+
+    .paciente-nombre {
+      color: #0d3a37 !important;
+    }
+
+    .active-indicator {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .active-indicator {
+    opacity: 0.3;
+    transition: all 0.2s ease;
+  }
+}
+
+.avatar-especie {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+// Filtro pills rápidos
+.filtro-pill {
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #475569;
+  font-weight: 500;
+  font-size: 0.825rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #0f766e;
+    color: #0f766e;
+    background-color: #f0fdf4;
+  }
+
+  &.active {
+    background-color: #0f766e;
+    border-color: #0f766e;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25);
+  }
+}
+
+.pag-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 0.825rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+// Inspector de Historial Clínico (Columna Derecha)
+.expediente-inspector-card {
+  position: sticky;
+  top: 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+  overflow-y: auto;
+  max-height: calc(100vh - 110px);
+  animation: fadeInInspector 0.25s ease-out;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+    &:hover {
+      background: #94a3b8;
+    }
+  }
+
+  .inspector-hero {
+    background: linear-gradient(135deg, #0d3a37 0%, #0f766e 100%);
+    color: #ffffff;
+    padding: 1.5rem;
+    position: relative;
+
+    .hero-avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .stat-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.85rem;
+    padding: 0.75rem 1rem;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: #f1f5f9;
+    }
+  }
+}
+
+// Timeline Clínico Continuo
+.timeline-consultas {
+  position: relative;
+  padding-left: 1.75rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 12px;
+    bottom: 24px;
+    width: 2px;
+    background: #cbd5e1;
+  }
+
+  .timeline-entry {
+    position: relative;
+    margin-bottom: 1.75rem;
+
+    &:last-child {
+      margin-bottom: 0.5rem;
+    }
+
+    .timeline-node {
+      position: absolute;
+      left: -1.75rem;
+      top: 12px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #0f766e;
+      border: 3px solid #ffffff;
+      box-shadow: 0 0 0 2px #0f766e;
+      z-index: 2;
+    }
+
+    .consulta-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: #99f6e4;
+        box-shadow: 0 4px 14px rgba(15, 118, 110, 0.08);
+      }
+    }
+  }
+}
+
+// Triaje biométrico compacto en una sola línea
+.triaje-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #334155;
+}
+
+@keyframes fadeInInspector {
+  from {
+    opacity: 0.85;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

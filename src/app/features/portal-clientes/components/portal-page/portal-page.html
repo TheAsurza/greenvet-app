@@ -1,0 +1,448 @@
+<div class="portal-container container-xl py-4 py-lg-5">
+
+  <!-- ========================================================================= -->
+  <!-- VISTA 1: FORMULARIO DE RESERVA DE CITA EN LÍNEA                          -->
+  <!-- ========================================================================= -->
+  @if (!citaConfirmada) {
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Encabezado de la página -->
+        <div class="text-center mb-4">
+          <div class="portal-hero-icon mb-3">
+            <i class="bi bi-calendar2-heart-fill"></i>
+          </div>
+          <h1 class="h3 fw-bold text-dark mb-2">Reserva tu Cita Médica</h1>
+          <p class="text-muted mb-0">
+            Agenda la atención para tu mascota en minutos. Disponibilidad en tiempo real sin esperas.
+          </p>
+        </div>
+
+        @if (mensajeError) {
+          <div class="alert alert-danger py-2 px-3 small rounded-3 d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-exclamation-octagon-fill flex-shrink-0"></i>
+            <span>{{ mensajeError }}</span>
+          </div>
+        }
+
+        <!-- Tarjeta Principal del Formulario -->
+        <div class="card border-0 bg-white shadow-sm rounded-4 p-4 p-md-5 mb-4">
+          <form [formGroup]="reservaForm" (ngSubmit)="reservarCita()">
+
+            <!-- --------------------------------------------------------------- -->
+            <!-- BLOQUE 1: DATOS DEL PROPIETARIO                                -->
+            <!-- --------------------------------------------------------------- -->
+            <div class="mb-4 pb-4 border-bottom">
+              <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                <span class="step-circle">1</span>
+                <span>Datos del Propietario</span>
+              </h2>
+
+              <!-- DNI con búsqueda automática -->
+              <div class="mb-3">
+                <label for="inputDni" class="form-label small fw-bold text-dark">
+                  Documento de Identidad (DNI) *
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted">
+                    <i class="bi bi-vcard"></i>
+                  </span>
+                  <input
+                    id="inputDni"
+                    type="text"
+                    class="form-control border-start-0 bg-light"
+                    placeholder="Ej: 47895123"
+                    maxlength="8"
+                    formControlName="documentoIdentidad"
+                    (blur)="buscarPorDni()"
+                    (keyup.enter)="buscarPorDni()"
+                  >
+                  <button
+                    class="btn btn-outline-teal px-3 fw-semibold d-inline-flex align-items-center gap-1"
+                    type="button"
+                    (click)="buscarPorDni()"
+                    title="Verificar si ya estás registrado para autocompletar tus datos y mascotas"
+                  >
+                    <i class="bi bi-search"></i>
+                    <span>Verificar</span>
+                  </button>
+                </div>
+                @if (reservaForm.get('documentoIdentidad')?.touched && reservaForm.get('documentoIdentidad')?.invalid) {
+                  <small class="text-danger d-block mt-1">Ingresa un DNI peruano válido de 8 dígitos numéricos.</small>
+                }
+
+                <!-- Accesos rápidos para clientes registrados de prueba -->
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-2 pt-1">
+                  <span class="text-muted small">Clientes de prueba:</span>
+                  @for (demo of DNI_DEMOS; track demo.dni) {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2"
+                      style="font-size: 0.75rem;"
+                      (click)="buscarPorDni(demo.dni)"
+                    >
+                      {{ demo.dni }} ({{ demo.nombre }})
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <!-- Nombre y Apellidos -->
+              <div class="mb-3">
+                <label for="inputNombrePropietario" class="form-label small fw-bold text-dark">Nombre y Apellidos *</label>
+                <input
+                  id="inputNombrePropietario"
+                  type="text"
+                  class="form-control"
+                  placeholder="Ej: Carlos Mendoza Ramos"
+                  formControlName="nombreCompleto"
+                >
+                @if (reservaForm.get('nombreCompleto')?.touched && reservaForm.get('nombreCompleto')?.invalid) {
+                  <small class="text-danger d-block mt-1">Por favor ingresa tu nombre completo.</small>
+                }
+              </div>
+
+              <!-- Contacto: Celular y Correo -->
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="inputTelefono" class="form-label small fw-bold text-dark">Teléfono / Celular *</label>
+                  <input
+                    id="inputTelefono"
+                    type="tel"
+                    class="form-control"
+                    placeholder="Ej: 987654321"
+                    maxlength="9"
+                    formControlName="telefono"
+                  >
+                  @if (reservaForm.get('telefono')?.touched && reservaForm.get('telefono')?.invalid) {
+                    <small class="text-danger d-block mt-1">Ingresa un número celular válido.</small>
+                  }
+                </div>
+
+                <div class="col-md-6">
+                  <label for="inputEmail" class="form-label small fw-bold text-dark">Correo Electrónico *</label>
+                  <input
+                    id="inputEmail"
+                    type="email"
+                    class="form-control"
+                    placeholder="ejemplo@correo.com"
+                    formControlName="email"
+                  >
+                  @if (reservaForm.get('email')?.touched && reservaForm.get('email')?.invalid) {
+                    <small class="text-danger d-block mt-1">Ingresa un correo electrónico válido.</small>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- --------------------------------------------------------------- -->
+            <!-- BLOQUE 2: DATOS DE LA MASCOTA A ATENDER                         -->
+            <!-- --------------------------------------------------------------- -->
+            <div class="mb-4 pb-4 border-bottom">
+              <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                <span class="step-circle">2</span>
+                <span>Datos del Paciente</span>
+              </h2>
+
+              <!-- Si el dueño ya tenía mascotas en el padrón, puede elegir cuál viene -->
+              @if (mascotasDelPropietario.length > 0) {
+                <div class="mb-3">
+                  <label class="form-label small fw-bold text-dark d-block">Selecciona a tu mascota:</label>
+                  <div class="d-flex flex-wrap gap-2">
+                    @for (m of mascotasDelPropietario; track m.id) {
+                      <button
+                        type="button"
+                        class="btn rounded-pill px-3 py-2 text-start transition-all d-inline-flex align-items-center gap-1 pet-pill-btn"
+                        [class.selected]="!esNuevaMascota && reservaForm.get('mascotaId')?.value === m.id"
+                        [class.btn-outline-secondary]="esNuevaMascota || reservaForm.get('mascotaId')?.value !== m.id"
+                        [attr.aria-pressed]="!esNuevaMascota && reservaForm.get('mascotaId')?.value === m.id"
+                        (click)="seleccionarMascotaExistente(m)"
+                      >
+                        @if (!esNuevaMascota && reservaForm.get('mascotaId')?.value === m.id) {
+                          <i class="bi bi-check-circle-fill me-1 text-white"></i>
+                        } @else {
+                          <i class="bi bi-tag me-1 text-muted"></i>
+                        }
+                        <span class="fw-bold">{{ m.nombre }}</span>
+                        <span class="small ms-1 opacity-75">({{ m.especie }})</span>
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="btn rounded-pill px-3 py-2 text-start d-inline-flex align-items-center gap-1 pet-pill-btn"
+                      [class.btn-outline-teal]="!esNuevaMascota"
+                      [class.selected]="esNuevaMascota"
+                      [attr.aria-pressed]="esNuevaMascota"
+                      (click)="habilitarNuevaMascota()"
+                    >
+                      @if (esNuevaMascota) {
+                        <i class="bi bi-check-circle-fill me-1 text-white"></i>
+                      } @else {
+                        <i class="bi bi-plus-lg me-1"></i>
+                      }
+                      <span>+ Otra Mascota</span>
+                    </button>
+                  </div>
+                </div>
+              }
+
+              <!-- Campos del Paciente -->
+              <div class="row g-3">
+                <div class="col-md-5">
+                  <label for="inputMascotaNombre" class="form-label small fw-bold text-dark">Nombre de la Mascota *</label>
+                  <input
+                    id="inputMascotaNombre"
+                    type="text"
+                    class="form-control"
+                    placeholder="Ej: Rocky, Luna, Milo"
+                    formControlName="mascotaNombre"
+                  >
+                  @if (reservaForm.get('mascotaNombre')?.touched && reservaForm.get('mascotaNombre')?.invalid) {
+                    <small class="text-danger d-block mt-1">Por favor ingresa el nombre de la mascota.</small>
+                  }
+                </div>
+
+                <div class="col-md-4">
+                  <label for="selectEspecie" class="form-label small fw-bold text-dark">Especie *</label>
+                  <select id="selectEspecie" class="form-select" formControlName="especie">
+                    @for (esp of especiesDisponibles; track esp) {
+                      <option [value]="esp">{{ esp }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="col-md-3">
+                  <label for="inputRaza" class="form-label small fw-bold text-dark">Raza *</label>
+                  <input
+                    id="inputRaza"
+                    type="text"
+                    class="form-control"
+                    placeholder="Ej: Mestizo, Siamés"
+                    formControlName="raza"
+                  >
+                  @if (reservaForm.get('raza')?.touched && reservaForm.get('raza')?.invalid) {
+                    <small class="text-danger d-block mt-1">Ingresa la raza.</small>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- --------------------------------------------------------------- -->
+            <!-- BLOQUE 3: MOTIVO DE LA CITA                                     -->
+            <!-- --------------------------------------------------------------- -->
+            <div class="mb-4 pb-4 border-bottom">
+              <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                <span class="step-circle">3</span>
+                <span>Motivo de la Cita Médica</span>
+              </h2>
+
+              <div class="mb-3">
+                <label for="selectMotivo" class="form-label small fw-bold text-dark">Tipo de Consulta *</label>
+                <select id="selectMotivo" class="form-select" formControlName="motivo">
+                  @for (mot of motivosDisponibles; track mot) {
+                    <option [value]="mot">{{ mot }}</option>
+                  }
+                </select>
+
+                @if (reservaForm.get('motivo')?.value === MotivoConsulta.URGENCIA) {
+                  <div class="alert alert-warning border-warning border-opacity-50 py-2 px-3 rounded-3 d-flex align-items-center gap-2 mt-2 mb-0">
+                    <i class="bi bi-exclamation-triangle-fill flex-shrink-0 fs-5 text-warning-emphasis"></i>
+                    <div class="small">
+                      <strong class="text-dark">¿Tu mascota presenta un riesgo vital inminente?</strong> (asfixia, convulsiones, traumatismo agudo o sospecha de envenenamiento).
+                      No esperes un turno programado: acude directamente a nuestra <strong>Guardia Veterinaria de Emergencia 24/7</strong> o llama al <strong>(01) 450-8900</strong>.
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div>
+                <label for="inputSintomas" class="form-label small fw-bold text-dark">
+                  Observaciones o síntomas previos (opcional)
+                </label>
+                <textarea
+                  id="inputSintomas"
+                  class="form-control"
+                  rows="2"
+                  placeholder="Ej: Falta de apetito desde ayer, vacuna anual, tos leve..."
+                  formControlName="notas"
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- --------------------------------------------------------------- -->
+            <!-- BLOQUE 4: FECHA Y TURNO HORARIO DISPONIBLE                      -->
+            <!-- --------------------------------------------------------------- -->
+            <div class="mb-4 pb-2">
+              <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                <span class="step-circle">4</span>
+                <span>Fecha y Horario de Atención</span>
+              </h2>
+
+              <!-- Selector de Fecha -->
+              <div class="mb-3">
+                <label for="inputFechaReserva" class="form-label small fw-bold text-dark">
+                  Selecciona el día de la cita:
+                </label>
+                <input
+                  id="inputFechaReserva"
+                  type="date"
+                  class="form-control bg-light"
+                  [min]="fechaMinima"
+                  [value]="fechaSeleccionada"
+                  (change)="cambiarFecha($any($event.target).value)"
+                >
+                <small class="text-muted d-block mt-1">
+                  Atención: Lunes a Sábado de 08:00 a 18:00 hrs.
+                </small>
+              </div>
+
+              <!-- Selector de Horarios Disponibles -->
+              <div class="mb-2">
+                <label class="form-label small fw-bold text-dark d-flex justify-content-between align-items-center mb-2">
+                  <span>Turnos Disponibles para el {{ fechaSeleccionada }}:</span>
+                  <span class="badge bg-light text-muted border">Turnos de 60 min</span>
+                </label>
+
+                <div class="row g-2">
+                  @for (slot of slotsHorarios; track slot.hora) {
+                    <div class="col-6 col-sm-4 col-md-3">
+                      <button
+                        type="button"
+                        class="btn w-100 py-2 px-1 rounded-3 slot-btn transition-all text-center position-relative"
+                        [class.slot-selected]="horaSeleccionada === slot.hora && slot.disponible"
+                        [class.btn-outline-secondary]="horaSeleccionada !== slot.hora && slot.disponible"
+                        [class.btn-light]="!slot.disponible"
+                        [class.text-muted]="!slot.disponible"
+                        [disabled]="!slot.disponible"
+                        [attr.aria-pressed]="horaSeleccionada === slot.hora"
+                        [attr.aria-label]="'Turno a las ' + slot.hora + (slot.disponible ? ', disponible' : ', ocupado')"
+                        (click)="seleccionarHora(slot)"
+                        [title]="slot.disponible ? 'Disponible' : (slot.motivoOcupado || 'Ocupado')"
+                      >
+                        <i class="bi me-1" [class.bi-clock]="slot.disponible" [class.bi-lock-fill]="!slot.disponible"></i>
+                        <span class="fw-bold">{{ slot.hora }}</span>
+                        @if (!slot.disponible) {
+                          <span class="d-block text-danger small fw-semibold" style="font-size: 0.75rem;">Ocupado</span>
+                        } @else if (horaSeleccionada === slot.hora) {
+                          <span class="d-block text-white small fw-semibold" style="font-size: 0.75rem;">Seleccionado</span>
+                        } @else {
+                          <span class="d-block text-success small fw-semibold" style="font-size: 0.75rem;">Libre</span>
+                        }
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón de Confirmación Proporcional -->
+            <div class="pt-3 border-top d-flex justify-content-end">
+              <button
+                type="submit"
+                class="btn btn-portal-primary px-4 py-2 rounded-pill fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
+                [disabled]="guardandoCita"
+              >
+                @if (guardandoCita) {
+                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span>Reservando...</span>
+                } @else {
+                  <i class="bi bi-calendar2-check-fill"></i>
+                  <span>Reservar Cita</span>
+                }
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- VISTA 2: COMPROBANTE / VOUCHER DIGITAL TRAS CONFIRMAR LA CITA             -->
+  <!-- ========================================================================= -->
+  @if (citaConfirmada) {
+    <div class="row justify-content-center py-4 animate-fade-in">
+      <div class="col-12 col-md-8 col-lg-6">
+
+        <div class="card border-0 bg-white shadow-lg rounded-4 overflow-hidden text-center p-4 p-md-5">
+          <div class="portal-hero-icon mb-3 mx-auto">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+
+          <h2 class="h3 fw-bold text-dark mb-1">¡Cita Reservada Exitosamente!</h2>
+          <p class="text-muted small mb-4">
+            Tu reserva ha sido ingresada al sistema de la clínica veterinaria.
+          </p>
+
+          <!-- Ticket Voucher Digital -->
+          <div class="card border border-dark border-opacity-10 rounded-4 p-4 text-start bg-light-subtle mb-4 shadow-xs">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-hospital text-emerald fs-5"></i>
+                <span class="fw-bold text-dark">GreenVet Clínica Veterinaria</span>
+              </div>
+              <span class="badge text-white px-3 py-1 rounded-pill" style="background: linear-gradient(135deg, #0f766e, #0d9488);">CONFIRMADA</span>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-6">
+                <span class="text-muted small d-block">Código de Cita:</span>
+                <strong class="text-dark">{{ citaConfirmada.id }}</strong>
+              </div>
+
+              <div class="col-6">
+                <span class="text-muted small d-block">Paciente:</span>
+                <strong class="text-dark fs-6">{{ citaConfirmada.mascotaNombre }}</strong>
+                <span class="badge bg-secondary-subtle text-dark ms-1 small">{{ citaConfirmada.especie }}</span>
+              </div>
+
+              <div class="col-6">
+                <span class="text-muted small d-block">Propietario:</span>
+                <strong class="text-dark">{{ citaConfirmada.propietarioNombre }}</strong>
+              </div>
+
+              <div class="col-6">
+                <span class="text-muted small d-block">Motivo de Atención:</span>
+                <strong class="text-dark">{{ citaConfirmada.motivo }}</strong>
+              </div>
+
+              <div class="col-12 border-top pt-2">
+                <span class="text-muted small d-block">Horario Programado:</span>
+                <span class="badge fs-6 fw-semibold px-3 py-2 mt-1 text-white rounded-pill" style="background: linear-gradient(135deg, #0f766e, #0d9488);">
+                  <i class="bi bi-calendar3 me-1"></i>
+                  {{ citaConfirmada.fechaHora | slice:0:10 }} &bull; {{ citaConfirmada.fechaHora | slice:11:16 }} hrs
+                </span>
+              </div>
+
+              <div class="col-12 border-top pt-2">
+                <span class="text-muted small d-block"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Sede Principal:</span>
+                <span class="text-dark small">Av. Las Palmeras 450, Los Olivos - Lima</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Indicaciones finales -->
+          <div class="alert alert-info py-2 px-3 small rounded-3 text-start mb-4">
+            <i class="bi bi-info-circle-fill me-1"></i>
+            <strong>Recomendación:</strong> Por favor presenta tu documento de identidad y acude con tu mascota 10 minutos antes de la hora acordada.
+          </div>
+
+          <div>
+            <button
+              type="button"
+              class="btn btn-outline-teal px-4 py-2 rounded-pill fw-semibold"
+              (click)="reservarOtraCita()"
+            >
+              <i class="bi bi-plus-circle me-1"></i>Reservar otra cita
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

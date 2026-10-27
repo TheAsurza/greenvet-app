@@ -1,0 +1,8 @@
+.mascota-card {
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0.75rem 1.5rem rgba(25, 135, 84, 0.12) !important;
+  }
+}

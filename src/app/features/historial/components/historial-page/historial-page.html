@@ -1,0 +1,548 @@
+<div class="pb-5">
+  <!-- Barra de Contexto y Nueva Atención Clínica -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill small fw-bold">
+          <i class="bi bi-journal-medical me-1"></i> Expedientes Clínicos
+        </span>
+        <span class="text-muted small d-none d-sm-inline">Evoluciones médicas, signos vitales, diagnósticos y prescripciones</span>
+      </div>
+      <button type="button" class="btn btn-success rounded-pill px-4 py-2 shadow-sm d-flex align-items-center gap-2 ms-auto" (click)="abrirModalAtencion()">
+        <i class="bi bi-clipboard2-plus-fill"></i>
+        <span class="fw-semibold">Nueva Atención</span>
+      </button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="historial$ | async as listaHistorial">
+    <ng-container *ngIf="mascotas$ | async as listaMascotas">
+      <ng-container *ngIf="getExpedientes(listaHistorial) as todosExpedientes">
+
+        <div class="row g-4 align-items-start master-detail-container">
+
+          <!-- ============================================================== -->
+          <!-- COLUMNA IZQUIERDA: MASTER LIST (Lista de Pacientes con Expediente) -->
+          <!-- ============================================================== -->
+          <div class="col-12 col-lg-5 col-xl-5">
+            <!-- Tarjeta de Controles y Búsqueda -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-3 bg-white">
+              <!-- Barra de búsqueda instantánea -->
+              <div class="input-group mb-3">
+                <span class="input-group-text bg-light border-end-0 text-muted">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control bg-light border-start-0"
+                  placeholder="Buscar por mascota, tutor, DNI, raza o diagnóstico..."
+                  [(ngModel)]="busqueda"
+                  (ngModelChange)="onBusquedaChange()"
+                />
+                <button *ngIf="busqueda" class="btn btn-light border-start-0" type="button" (click)="limpiarBusqueda()" title="Limpiar búsqueda">
+                  <i class="bi bi-x-lg text-muted"></i>
+                </button>
+              </div>
+
+              <!-- Filtros Rápidos de Especie (Pills interactivos) -->
+              <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                <button
+                  type="button"
+                  class="filtro-pill"
+                  [class.active]="especieFiltro === 'TODAS'"
+                  (click)="setEspecieFiltro('TODAS')">
+                  Todas
+                </button>
+                <button
+                  type="button"
+                  class="filtro-pill"
+                  [class.active]="especieFiltro === EspecieMascota.CANINO"
+                  (click)="setEspecieFiltro(EspecieMascota.CANINO)">
+                  <i class="bi bi-shield-shaded me-1"></i> Caninos
+                </button>
+                <button
+                  type="button"
+                  class="filtro-pill"
+                  [class.active]="especieFiltro === EspecieMascota.FELINO"
+                  (click)="setEspecieFiltro(EspecieMascota.FELINO)">
+                  <i class="bi bi-moon-stars-fill me-1"></i> Felinos
+                </button>
+                <button
+                  type="button"
+                  class="filtro-pill"
+                  [class.active]="especieFiltro === EspecieMascota.EXOTICO"
+                  (click)="setEspecieFiltro(EspecieMascota.EXOTICO)">
+                  <i class="bi bi-stars me-1"></i> Exóticos
+                </button>
+              </div>
+
+              <!-- Contador de resultados -->
+              <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                <span class="small text-muted">Mostrando {{ todosExpedientes.length }} expedientes</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small">
+                  {{ todosExpedientes.length }} pacientes &bull; Pág. {{ paginaActual }} de {{ getTotalPaginas(todosExpedientes) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Feed Paginado de Pacientes con Expediente (Uniforme, sin scrollbar interno) -->
+            <div class="pacientes-feed-list" *ngIf="todosExpedientes.length > 0; else sinResultadosExpedientes">
+              <div
+                *ngFor="let exp of getExpedientesPaginados(todosExpedientes)"
+                class="paciente-item p-3"
+                [class.is-selected]="getExpedienteActivo(todosExpedientes)?.mascota?.id === exp.mascota.id"
+                (click)="seleccionarExpediente(exp)"
+                role="button"
+                tabindex="0"
+              >
+                <div class="d-flex align-items-center justify-content-between gap-2">
+                  <div class="d-flex align-items-center gap-3">
+                    <!-- Avatar con icono por especie -->
+                    <div
+                      class="avatar-especie"
+                      [ngClass]="exp.mascota.especie === EspecieMascota.CANINO ? 'bg-success-subtle text-success' : (exp.mascota.especie === EspecieMascota.FELINO ? 'bg-warning-subtle text-warning-emphasis' : 'bg-primary-subtle text-primary')">
+                      <i class="bi" [ngClass]="exp.mascota.especie === EspecieMascota.CANINO ? 'bi-shield-shaded' : (exp.mascota.especie === EspecieMascota.FELINO ? 'bi-moon-stars-fill' : 'bi-stars')"></i>
+                    </div>
+
+                    <div>
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="fw-bold fs-6 paciente-nombre text-dark">{{ exp.mascota.nombre }}</span>
+                        <!-- Sexo badge -->
+                        <span
+                          class="badge px-1 py-0 small fw-semibold"
+                          [ngClass]="exp.mascota.sexo === SexoMascota.MACHO ? 'bg-info-subtle text-info-emphasis' : 'bg-danger-subtle text-danger-emphasis'"
+                          [title]="'Sexo: ' + exp.mascota.sexo">
+                          <i class="bi" [ngClass]="exp.mascota.sexo === SexoMascota.MACHO ? 'bi-gender-male' : 'bi-gender-female'"></i>
+                        </span>
+                        <!-- Edad badge -->
+                        <span class="badge bg-light text-muted border px-2 py-0 small">
+                          {{ exp.mascota.edad }} {{ exp.mascota.edad === 1 ? 'año' : 'años' }}
+                        </span>
+                      </div>
+
+                      <!-- Especie & Raza -->
+                      <div class="d-flex align-items-center gap-1 mb-1">
+                        <span
+                          class="badge px-2 py-0 small fw-medium"
+                          [ngClass]="exp.mascota.especie === EspecieMascota.CANINO ? 'bg-success-subtle text-success border border-success-subtle' : (exp.mascota.especie === EspecieMascota.FELINO ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-primary-subtle text-primary border border-primary-subtle')">
+                          {{ exp.mascota.especie }}
+                        </span>
+                        <span class="text-secondary small text-truncate" style="max-width: 140px;">
+                          &bull; {{ exp.mascota.raza }}
+                        </span>
+                      </div>
+
+                      <!-- Dueño / Tutor -->
+                      <div class="small text-muted d-flex align-items-center gap-1">
+                        <i class="bi bi-person-fill text-success"></i>
+                        <span class="text-truncate" style="max-width: 170px;">{{ exp.mascota.propietario.nombreCompleto }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Lado derecho del item: Conteo de consultas y chevron -->
+                  <div class="text-end d-flex flex-column align-items-end justify-content-between h-100">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill small fw-semibold">
+                      <i class="bi bi-folder2-open me-1"></i>{{ exp.consultas.length }} {{ exp.consultas.length === 1 ? 'atención' : 'atenciones' }}
+                    </span>
+                    <div class="active-indicator text-success mt-2">
+                      <i class="bi bi-chevron-right fs-6"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Barra de Paginación Compacta (Elimina el scroll y nivela la altura) -->
+            <div class="card border-0 shadow-sm rounded-4 p-2 mt-3 bg-white" *ngIf="todosExpedientes.length > 0">
+              <div class="d-flex justify-content-between align-items-center px-1 py-1">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary rounded-pill px-3 d-flex align-items-center gap-1"
+                  [disabled]="paginaActual === 1"
+                  (click)="cambiarPagina(paginaActual - 1, todosExpedientes)">
+                  <i class="bi bi-chevron-left"></i>
+                  <span class="d-none d-sm-inline">Anterior</span>
+                </button>
+
+                <div class="d-flex align-items-center gap-1">
+                  <span class="small text-muted me-1 d-none d-md-inline">Pág.</span>
+                  <ng-container *ngFor="let p of getPaginasArray(getTotalPaginas(todosExpedientes))">
+                    <button
+                      type="button"
+                      class="btn btn-sm rounded-circle p-0 pag-btn"
+                      [ngClass]="p === paginaActual ? 'btn-success text-white fw-bold shadow-sm' : 'btn-light text-dark'"
+                      (click)="cambiarPagina(p, todosExpedientes)">
+                      {{ p }}
+                    </button>
+                  </ng-container>
+                  <span class="small text-muted ms-1">de {{ getTotalPaginas(todosExpedientes) }}</span>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary rounded-pill px-3 d-flex align-items-center gap-1"
+                  [disabled]="paginaActual === getTotalPaginas(todosExpedientes)"
+                  (click)="cambiarPagina(paginaActual + 1, todosExpedientes)">
+                  <span class="d-none d-sm-inline">Siguiente</span>
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Empty state si no hay resultados -->
+            <ng-template #sinResultadosExpedientes>
+              <div class="text-center py-5 bg-white rounded-4 shadow-sm border p-4">
+                <i class="bi bi-search fs-2 text-muted d-block mb-3"></i>
+                <h6 class="fw-bold text-dark">No se encontraron expedientes</h6>
+                <p class="text-muted small mb-3">No hay atenciones que coincidan con "{{ busqueda }}".</p>
+                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" (click)="limpiarBusqueda(); setEspecieFiltro('TODAS')">
+                  Limpiar Filtros
+                </button>
+              </div>
+            </ng-template>
+          </div>
+
+          <!-- ============================================================== -->
+          <!-- COLUMNA DERECHA: DETAIL INSPECTOR (Timeline de Evolución Médica)-->
+          <!-- ============================================================== -->
+          <div class="col-12 col-lg-7 col-xl-7">
+            <div *ngIf="getExpedienteActivo(todosExpedientes) as exp; else sinExpedienteActivo" class="expediente-inspector-card">
+              
+              <!-- Hero Header del Expediente -->
+              <div class="inspector-hero">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="hero-avatar">
+                      <i class="bi" [ngClass]="exp.mascota.especie === EspecieMascota.CANINO ? 'bi-shield-shaded' : (exp.mascota.especie === EspecieMascota.FELINO ? 'bi-moon-stars-fill' : 'bi-stars')"></i>
+                    </div>
+                    <div>
+                      <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <h3 class="fw-bold mb-0 text-white">{{ exp.mascota.nombre }}</h3>
+                        <span class="badge bg-white text-dark px-2 py-1 small fw-semibold">
+                          {{ exp.mascota.raza }}
+                        </span>
+                        <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle px-2 py-1 small fw-semibold">
+                          {{ exp.mascota.especie }}
+                        </span>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 mt-1 text-white-50 small flex-wrap">
+                        <span>Dueño: <strong class="text-white">{{ exp.mascota.propietario.nombreCompleto }}</strong></span>
+                        <span>&bull;</span>
+                        <span>DNI: {{ exp.mascota.propietario.documentoIdentidad }}</span>
+                        <span *ngIf="exp.mascota.fichaClinica?.microchip">&bull;</span>
+                        <span *ngIf="exp.mascota.fichaClinica?.microchip">Chip: <code class="text-warning-emphasis bg-warning-subtle px-1 rounded">{{ exp.mascota.fichaClinica.microchip }}</code></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Botón de Registro Rápido para Este Paciente -->
+                  <button type="button" class="btn btn-light text-success fw-bold btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-2" (click)="abrirModalAtencion(exp.mascota.id)">
+                    <i class="bi bi-clipboard2-plus-fill"></i>
+                    <span>+ Nueva Atención</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Métricas del Expediente -->
+              <div class="p-4 pb-2">
+                <div class="row g-2 mb-4">
+                  <div class="col-6 col-md-3">
+                    <div class="stat-card text-center">
+                      <small class="text-muted d-block mb-1">Última Atención</small>
+                      <strong class="text-dark small">{{ exp.ultimaConsulta?.fechaAtencion || 'Sin registro' }}</strong>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="stat-card text-center">
+                      <small class="text-muted d-block mb-1">Total Consultas</small>
+                      <strong class="fs-5 text-success">{{ exp.consultas.length }}</strong>
+                      <span class="text-muted small ms-1">{{ exp.consultas.length === 1 ? 'cita' : 'citas' }}</span>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="stat-card text-center">
+                      <small class="text-muted d-block mb-1">Último Peso</small>
+                      <strong class="fs-5 text-dark">{{ exp.ultimaConsulta?.signosVitales?.pesoKg || exp.mascota.pesoActualKg }}</strong>
+                      <span class="text-muted small ms-1">kg</span>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="stat-card text-center">
+                      <small class="text-muted d-block mb-1">Tutor Contacto</small>
+                      <a [href]="'tel:' + exp.mascota.propietario.telefono" class="text-success text-decoration-none fw-semibold small">
+                        <i class="bi bi-telephone-fill me-1"></i>{{ exp.mascota.propietario.telefono }}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Título del Timeline -->
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                  <span class="fw-bold text-success text-uppercase small d-flex align-items-center gap-2">
+                    <i class="bi bi-journal-medical fs-5"></i> Evolución Cronológica y Consultas Realizadas
+                  </span>
+                  <span class="badge bg-light text-muted border rounded-pill px-2 py-1 small">
+                    Ordenado de más reciente a más antiguo
+                  </span>
+                </div>
+
+                <!-- Timeline Continuo de Consultas -->
+                <div class="timeline-consultas">
+                  <div class="timeline-entry" *ngFor="let h of exp.consultas; let i = index">
+                    <!-- Nodo indicador del timeline -->
+                    <div class="timeline-node"></div>
+
+                    <!-- Tarjeta de Consulta Estructurada -->
+                    <div class="consulta-card p-3">
+                      <!-- Cabecera de la Consulta -->
+                      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 pb-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="badge bg-success rounded-pill px-3 py-1 fw-semibold">
+                            <i class="bi bi-calendar2-event me-1"></i> {{ h.fechaAtencion }}
+                          </span>
+                          <span class="badge bg-light text-dark border px-2 py-1 small fw-bold">
+                            Consulta #{{ exp.consultas.length - i }}
+                          </span>
+                        </div>
+                        <div class="small text-muted">
+                          <i class="bi bi-person-badge text-success me-1"></i>
+                          Dr(a): <strong class="text-dark">{{ h.veterinarioTratante }}</strong>
+                        </div>
+                      </div>
+
+                      <!-- Motivo de Consulta -->
+                      <div class="mb-3">
+                        <span class="text-muted small d-block">Motivo de la atención:</span>
+                        <strong class="fs-6 text-dark">{{ h.motivoConsulta }}</strong>
+                      </div>
+
+                      <!-- Triaje Biométrico Compacto en Chips en Línea -->
+                      <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="triaje-chip">
+                          <i class="bi bi-speedometer2 text-success"></i>
+                          <span>Peso: <strong>{{ h.signosVitales.pesoKg }} kg</strong></span>
+                        </span>
+                        <span class="triaje-chip">
+                          <i class="bi bi-thermometer-half text-danger"></i>
+                          <span>Temp: <strong>{{ h.signosVitales.temperaturaCelsius }} °C</strong></span>
+                        </span>
+                        <span class="triaje-chip" *ngIf="h.signosVitales.frecuenciaCardiacaBpm">
+                          <i class="bi bi-heart-pulse-fill text-primary"></i>
+                          <span>FC: <strong>{{ h.signosVitales.frecuenciaCardiacaBpm }} bpm</strong></span>
+                        </span>
+                      </div>
+
+                      <!-- Diagnóstico Médico Clínico -->
+                      <div class="p-3 bg-light rounded-3 border mb-3">
+                        <div class="d-flex align-items-center gap-1 fw-bold text-dark small mb-1">
+                          <i class="bi bi-activity text-success"></i> Diagnóstico Médico:
+                        </div>
+                        <p class="mb-0 text-secondary small">{{ h.diagnostico }}</p>
+                      </div>
+
+                      <!-- Tratamiento y Receta Médica (Rx) -->
+                      <div class="p-3 bg-success-subtle rounded-3 border border-success-subtle mb-3">
+                        <div class="d-flex align-items-center gap-1 fw-bold text-success-emphasis small mb-1">
+                          <i class="bi bi-capsule"></i> Tratamiento y Medicación Prescrita (Rx):
+                        </div>
+                        <p class="mb-0 text-dark small">{{ h.tratamientoRecetado }}</p>
+                      </div>
+
+                      <!-- Observaciones si existen -->
+                      <div *ngIf="h.observaciones" class="small text-muted mb-2 ps-1">
+                        <i class="bi bi-info-circle text-secondary me-1"></i>
+                        <strong>Observaciones:</strong> {{ h.observaciones }}
+                      </div>
+
+                      <!-- Próximo Control y Botón para Agendar -->
+                      <div *ngIf="h.fechaProximaCita" class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center p-2 px-3 bg-white rounded-3 border gap-2 mt-2">
+                        <div class="d-flex align-items-center gap-2 text-success fw-semibold small">
+                          <i class="bi bi-calendar-check-fill fs-6"></i>
+                          <span>Próximo control sugerido: <strong>{{ h.fechaProximaCita }}</strong></span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1 small" (click)="programarControl(h)">
+                          <i class="bi bi-calendar-plus me-1"></i> Programar Cita de Control
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Empty state si no hay expediente activo -->
+            <ng-template #sinExpedienteActivo>
+              <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+                <i class="bi bi-journal-medical fs-1 text-muted d-block mb-3"></i>
+                <h5 class="fw-bold text-dark">Ningún expediente seleccionado</h5>
+                <p class="text-muted small">Selecciona un paciente del padrón en la lista izquierda para inspeccionar su historial clínico completo y evoluciones médicas.</p>
+              </div>
+            </ng-template>
+          </div>
+
+        </div>
+
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</div>
+
+<!-- Modal Registro de Atención Clínica con Jerarquía Dueño -> Mascota -->
+<div class="modal fade show d-block p-3 p-md-4" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" *ngIf="mostrarModal">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content rounded-4 border-0 shadow overflow-hidden">
+      <div class="modal-header bg-success text-white border-0 py-3">
+        <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+          <i class="bi bi-clipboard2-pulse"></i> Registrar Nueva Atención Clínica
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- Alerta de éxito -->
+        <div class="alert alert-success d-flex align-items-center gap-2" *ngIf="guardadoExitoso">
+          <i class="bi bi-check-circle-fill fs-5"></i>
+          <div><strong>¡Atención clínica guardada en el historial del paciente!</strong></div>
+        </div>
+
+        <form [formGroup]="atencionForm" (ngSubmit)="guardarAtencion()">
+          <!-- PASO 1: JERARQUÍA DUEÑO TITULAR -->
+          <div class="p-3 bg-light rounded-4 border mb-3">
+            <label class="form-label fw-bold text-success text-uppercase small d-block mb-2">
+              <i class="bi bi-person-fill me-1"></i> 1. Dueño / Titular Responsable *
+            </label>
+
+            <!-- Tarjeta de Dueño Seleccionado -->
+            <div *ngIf="getPropietarioSeleccionado() as prop" class="card border-0 bg-white p-3 shadow-sm rounded-3">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge rounded-circle p-2 bg-success-subtle text-success fs-5">
+                    <i class="bi bi-person-check-fill"></i>
+                  </span>
+                  <div>
+                    <h6 class="mb-0 fw-bold text-dark">{{ prop.nombreCompleto }}</h6>
+                    <small class="text-muted">
+                      DNI: <strong>{{ prop.documentoIdentidad }}</strong> &bull; Tel: <strong>{{ prop.telefono }}</strong>
+                    </small>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" (click)="abrirModalBuscarDueno()">
+                  <i class="bi bi-search me-1"></i> Cambiar Dueño
+                </button>
+              </div>
+            </div>
+
+            <!-- Si aún no hay dueño seleccionado -->
+            <div *ngIf="!getPropietarioSeleccionado()" class="text-center py-3 bg-white rounded-3 border border-dashed">
+              <p class="text-muted small mb-2">Seleccione al cliente titular para listar sus mascotas a atender.</p>
+              <button type="button" class="btn btn-success btn-sm rounded-pill px-4" (click)="abrirModalBuscarDueno()">
+                <i class="bi bi-search me-1"></i> Buscar Dueño por Nombre o DNI
+              </button>
+            </div>
+          </div>
+
+          <!-- PASO 2: PACIENTE EN CASCADA -->
+          <div class="p-3 bg-light rounded-4 border mb-3" *ngIf="getPropietarioSeleccionado()">
+            <label class="form-label fw-bold text-success text-uppercase small mb-2 d-block">
+              <i class="bi bi-heart-fill me-1"></i> 2. Mascota a Atender *
+            </label>
+
+            <select class="form-select bg-white" formControlName="mascotaId" (change)="onMascotaCambiada($any($event.target).value)" [class.is-invalid]="esInvalido('mascotaId')">
+              <option value="" disabled>Seleccione una mascota del cliente</option>
+              <option *ngFor="let m of mascotasDelPropietario" [value]="m.id">
+                {{ m.nombre }} &bull; {{ m.especie }} ({{ m.raza }}) &bull; {{ m.edad }} años &bull; Peso actual: {{ m.pesoActualKg }} kg
+              </option>
+            </select>
+            <div class="invalid-feedback">Debe seleccionar una mascota.</div>
+          </div>
+
+          <!-- PASO 3: PARÁMETROS CLÍNICOS -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Fecha de Atención *</label>
+              <input type="date" class="form-control" formControlName="fechaAtencion" [class.is-invalid]="esInvalido('fechaAtencion')"/>
+              <div class="invalid-feedback">Fecha obligatoria.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Veterinario Tratante *</label>
+              <select class="form-select" formControlName="veterinarioTratante">
+                <option *ngFor="let v of veterinarios" [value]="v">{{ v }}</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Motivo de la Atención *</label>
+              <input type="text" class="form-control" formControlName="motivoConsulta" placeholder="Ej. Control de vómitos y decaimiento" [class.is-invalid]="esInvalido('motivoConsulta')"/>
+              <div class="invalid-feedback">Motivo requerido.</div>
+            </div>
+
+            <!-- Signos Vitales y Triaje -->
+            <div class="col-12">
+              <h6 class="text-success fw-bold text-uppercase border-bottom pb-2 my-2 small">
+                Signos Vitales y Triaje Clínico
+              </h6>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Peso en Atención (kg) *</label>
+              <input type="number" step="0.1" class="form-control" formControlName="pesoKg" [class.is-invalid]="esInvalido('pesoKg')"/>
+              <div class="invalid-feedback">Peso obligatorio.</div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Temperatura (°C) *</label>
+              <input type="number" step="0.1" class="form-control" formControlName="temperaturaCelsius" [class.is-invalid]="esInvalido('temperaturaCelsius')"/>
+              <div class="invalid-feedback">Temperatura válida (34 - 43 °C).</div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Frecuencia Cardíaca (bpm)</label>
+              <input type="number" class="form-control" formControlName="frecuenciaCardiacaBpm" placeholder="Ej. 110"/>
+            </div>
+
+            <!-- Diagnóstico y Receta -->
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Diagnóstico Clínico *</label>
+              <textarea class="form-control" rows="2" formControlName="diagnostico" placeholder="Detalle el diagnóstico médico veterinario..." [class.is-invalid]="esInvalido('diagnostico')"></textarea>
+              <div class="invalid-feedback">Diagnóstico obligatorio (mínimo 6 caracteres).</div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Tratamiento y Receta Médica *</label>
+              <textarea class="form-control" rows="3" formControlName="tratamientoRecetado" placeholder="Medicamentos, dosis y pautas terapéuticas..." [class.is-invalid]="esInvalido('tratamientoRecetado')"></textarea>
+              <div class="invalid-feedback">Tratamiento obligatorio (mínimo 6 caracteres).</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Fecha Próxima Cita (Control sugerido)</label>
+              <input type="date" class="form-control" formControlName="fechaProximaCita"/>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Observaciones Adicionales</label>
+              <input type="text" class="form-control" formControlName="observaciones" placeholder="Indicaciones para el dueño"/>
+            </div>
+          </div>
+
+          <div class="modal-footer border-0 px-0 pb-0 mt-4">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" (click)="cerrarModal()">Cancelar</button>
+            <button type="submit" class="btn btn-success rounded-pill px-4" [disabled]="atencionForm.invalid || guardadoExitoso">
+              <i class="bi bi-save me-1"></i> Guardar en Historial
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUB-MODAL LOOKUP: Reutilizable desde SharedModule -->
+<app-dueno-lookup-modal
+  [visible]="mostrarModalBuscarDueno"
+  [propietarios]="propietarios"
+  (cerrar)="cerrarModalBuscarDueno()"
+  (seleccionar)="onDuenoSeleccionado($event)"
+></app-dueno-lookup-modal>

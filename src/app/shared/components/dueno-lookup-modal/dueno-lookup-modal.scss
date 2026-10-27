@@ -1,0 +1,10 @@
+// Estilos específicos para el modal de búsqueda de dueño
+.list-group-item {
+  transition: background-color 0.15s ease-in-out;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--bs-light);
+  }
+}
+

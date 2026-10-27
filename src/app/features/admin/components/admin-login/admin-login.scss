@@ -1,0 +1,40 @@
+.admin-login-container {
+  min-height: calc(100vh - 140px);
+}
+
+.text-muted {
+  color: #495057 !important;
+}
+
+.text-emerald {
+  color: #0f766e !important;
+}
+
+.login-hero-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0d3a37 0%, #0f766e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(13, 58, 55, 0.25);
+
+  i {
+    font-size: 1.85rem;
+    color: #f59e0b;
+  }
+}
+
+.hover-shadow {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border-color: #e5e7eb;
+
+  &:hover {
+    background-color: #f8fafc;
+    border-color: #0f766e;
+    transform: translateX(3px);
+    box-shadow: 0 2px 8px rgba(15, 118, 110, 0.12);
+  }
+}

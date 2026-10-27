@@ -1,0 +1,130 @@
+<div class="admin-login-container container-xl py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+
+      <!-- Encabezado Institucional -->
+      <div class="text-center mb-4">
+        <div class="login-hero-icon mb-3 mx-auto">
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <h1 class="h3 fw-bold text-dark mb-1">Intranet GreenVet</h1>
+        <p class="text-muted small mb-0">
+          Acceso exclusivo para médicos veterinarios y personal administrativo.
+        </p>
+      </div>
+
+      <!-- Tarjeta de Login -->
+      <div class="card border-0 bg-white shadow-sm rounded-4 p-4 p-md-5 mb-4">
+        
+        <div class="d-flex align-items-center gap-2 mb-4 pb-2 border-bottom">
+          <i class="bi bi-person-badge-fill text-emerald fs-5"></i>
+          <h2 class="h6 fw-bold text-dark mb-0 text-uppercase tracking-wider">Identificación de Personal</h2>
+        </div>
+
+        @if (errorMensaje) {
+          <div class="alert alert-danger py-2 px-3 small rounded-3 d-flex align-items-center gap-2 mb-3">
+            <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+            <span>{{ errorMensaje }}</span>
+          </div>
+        }
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          
+          <div class="mb-3">
+            <label for="inputUsuarioStaff" class="form-label small fw-bold text-dark">
+              Usuario o Correo Institucional *
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted">
+                <i class="bi bi-person"></i>
+              </span>
+              <input
+                id="inputUsuarioStaff"
+                type="text"
+                class="form-control border-start-0 bg-light"
+                placeholder="Ej: admin o camila.soto@greenvet.pe"
+                formControlName="usuario"
+                autocomplete="username"
+              >
+            </div>
+            @if (loginForm.get('usuario')?.touched && loginForm.get('usuario')?.invalid) {
+              <small class="text-danger d-block mt-1">Por favor ingresa tu usuario o correo.</small>
+            }
+          </div>
+
+          <div class="mb-4">
+            <label for="inputClaveStaff" class="form-label small fw-bold text-dark">
+              Contraseña de Acceso *
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted">
+                <i class="bi bi-key"></i>
+              </span>
+              <input
+                id="inputClaveStaff"
+                type="password"
+                class="form-control border-start-0 bg-light"
+                placeholder="••••••••"
+                formControlName="clave"
+                autocomplete="current-password"
+              >
+            </div>
+            @if (loginForm.get('clave')?.touched && loginForm.get('clave')?.invalid) {
+              <small class="text-danger d-block mt-1">Por favor ingresa tu contraseña.</small>
+            }
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary-teal btn-lg w-100 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
+            [disabled]="cargando"
+          >
+            @if (cargando) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span>Ingresando al Panel...</span>
+            } @else {
+              <i class="bi bi-box-arrow-in-right"></i>
+              <span>Ingresar al Sistema Clínico</span>
+            }
+          </button>
+
+        </form>
+
+        <!-- Accesos rápidos para perfiles de demostración -->
+        <div class="mt-4 pt-3 border-top">
+          <span class="d-block text-muted small fw-semibold text-uppercase tracking-wider mb-2">
+            <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Acceso rápido para demostración (1-clic):
+          </span>
+          <div class="d-flex flex-column gap-2">
+            @for (staff of personalDisponible; track staff.id) {
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary text-start d-flex justify-content-between align-items-center px-3 py-2 rounded-3 hover-shadow"
+                (click)="accesoRapido(staff.id)"
+              >
+                <div>
+                  <strong class="d-block text-dark">{{ staff.nombreCompleto }}</strong>
+                  <span class="text-muted small" style="font-size: 0.75rem;">{{ staff.rol }}</span>
+                </div>
+                <i class="bi bi-chevron-right text-muted small"></i>
+              </button>
+            }
+          </div>
+          <small class="text-muted d-block mt-2 fst-italic text-center" style="font-size: 0.75rem;">
+            Credencial manual estándar: <strong>admin</strong> / clave: <strong>1234</strong>
+          </small>
+        </div>
+
+      </div>
+
+      <!-- Enlace para volver al portal de clientes -->
+      <div class="text-center">
+        <a routerLink="/portal" class="text-decoration-none text-emerald small fw-semibold d-inline-flex align-items-center gap-1">
+          <i class="bi bi-arrow-left"></i>
+          <span>Volver al Portal Público de Clientes (Reserva Online)</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>

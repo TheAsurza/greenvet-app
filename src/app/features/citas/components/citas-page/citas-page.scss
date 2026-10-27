@@ -1,0 +1,306 @@
+.modal.fade.show {
+  display: block;
+  backdrop-filter: blur(2px);
+}
+
+.cita-card-interactiva {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(15, 118, 110, 0.15) !important;
+  }
+}
+
+/* === CALENDARIO ESTILO TEAMS / GOOGLE CALENDAR === */
+.calendar-container {
+  background: #ffffff;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+/* Encabezados de días de la semana */
+.calendar-weekdays-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  .calendar-weekday-header {
+    padding: 0.75rem 0.5rem;
+    border-right: 1px solid #f1f5f9;
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+}
+
+/* Grilla del Mes (7 columnas x 5 filas) */
+.calendar-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #e2e8f0;
+  gap: 1px;
+}
+
+.calendar-month-cell {
+  background-color: #ffffff;
+  min-height: 120px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f0fdf4;
+  }
+
+  &.other-month {
+    background-color: #f8fafc;
+    opacity: 0.6;
+  }
+
+  &.is-today {
+    background-color: #ecfdf5;
+
+    .cell-header .day-number,
+    .day-number {
+      background-color: #0f766e !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(15, 118, 110, 0.4);
+    }
+  }
+
+  .cell-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+
+    .day-number {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .badge-count {
+      font-size: 0.7rem;
+    }
+  }
+
+  .citas-pills-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow: hidden;
+  }
+
+  .cita-micro-pill {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.35rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-left: 3px solid;
+
+    &.status-pendiente {
+      background-color: #fef9c3;
+      color: #854d0e;
+      border-left-color: #eab308;
+    }
+    &.status-confirmada {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      border-left-color: #0284c7;
+    }
+    &.status-atendida {
+      background-color: #dcfce7;
+      color: #15803d;
+      border-left-color: #16a34a;
+    }
+    &.status-cancelada {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border-left-color: #dc2626;
+    }
+  }
+}
+
+/* Grilla Semanal */
+.calendar-week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.75rem;
+
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.calendar-week-column {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  min-height: 480px;
+  overflow: hidden;
+
+  &.is-today {
+    border-color: #0f766e;
+    box-shadow: 0 0 0 2px #0f766e;
+
+    .week-col-header {
+      background-color: #0f766e !important;
+      color: #ffffff !important;
+
+      .col-day-name {
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+
+      .col-day-num {
+        color: #ffffff !important;
+      }
+
+      .text-muted {
+        color: rgba(255, 255, 255, 0.85) !important;
+      }
+
+      .text-dark {
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  .week-col-header {
+    background-color: #f8fafc;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f1f5f9;
+    }
+
+    .col-day-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .col-day-num {
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+  }
+
+  .week-col-body {
+    padding: 0.6rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+.week-cita-card {
+  padding: 0.55rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid #0f766e;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  &.border-pendiente { border-left-color: #eab308; }
+  &.border-confirmada { border-left-color: #0284c7; }
+  &.border-atendida { border-left-color: #16a34a; }
+  &.border-cancelada { border-left-color: #dc2626; }
+}
+
+/* Grilla del Día (Timeline por Horas) */
+.timeline-hour-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  border-bottom: 1px solid #e2e8f0;
+  min-height: 64px;
+  align-items: stretch;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .timeline-hour-label {
+    padding: 0.75rem;
+    background-color: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .timeline-hour-content {
+    padding: 0.6rem 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .timeline-slot-free {
+    width: 100%;
+    border: 1px dashed #cbd5e1;
+    border-radius: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    background-color: #fafbfc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #64748b;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #f0fdf4;
+      border-color: #86efac;
+      color: #15803d;
+    }
+  }
+}

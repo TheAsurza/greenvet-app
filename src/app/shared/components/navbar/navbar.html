@@ -1,0 +1,127 @@
+<!-- ========================================================================= -->
+<!-- MODO 1: NAVBAR PÚBLICO (PORTAL DE CLIENTES / RESERVA ONLINE)               -->
+<!-- ========================================================================= -->
+@if (!esRutaAdministrativa) {
+  <nav class="navbar navbar-expand-lg navbar-dark portal-navbar shadow-sm mb-4">
+    <div class="container-xl">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold py-1" routerLink="/portal">
+        <img src="logo-greenvet.jpg" alt="GreenVet Logo" class="rounded-circle bg-white p-1 shadow-sm" style="width: 44px; height: 44px; object-fit: contain;">
+        <span class="fs-4">{{ clinicaNombre }}</span>
+        <span class="portal-tag ms-2 d-none d-sm-inline-flex">
+          <span class="portal-tag-dot"></span>
+          Portal Pacientes
+        </span>
+      </a>
+
+      <button
+        class="navbar-toggler border-0"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navPublico"
+        aria-controls="navPublico"
+        aria-expanded="false"
+        aria-label="Abrir navegación"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navPublico">
+        <!-- Información de atención y acceso de personal / login -->
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 ms-auto mt-2 mt-lg-0">
+          <span class="text-white-50 small d-inline-flex align-items-center">
+            <i class="bi bi-clock-fill me-1 text-white"></i> Lun-Sáb: 08:00 - 18:00 hrs &bull; 
+            <i class="bi bi-telephone-fill ms-2 me-1 text-white"></i> Urgencias: (01) 450-8900
+          </span>
+
+          <a
+            routerLink="/admin/login"
+            class="btn btn-sm rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 btn-login-portal text-white"
+            title="Inicio de sesión para médicos veterinarios y personal administrativo"
+          >
+            <i class="bi bi-person-fill-lock"></i>
+            <span>Iniciar Sesión</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+}
+
+<!-- ========================================================================= -->
+<!-- MODO 2: NAVBAR INTERNO (INTRANET CLÍNICA / PANEL DE GESTIÓN MÉDICA)        -->
+<!-- ========================================================================= -->
+@if (esRutaAdministrativa) {
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow mb-4 border-bottom border-success border-3">
+    <div class="container-xl">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold py-1" routerLink="/admin/citas">
+        <img src="logo-greenvet.jpg" alt="GreenVet Logo" class="rounded-circle bg-white p-1 shadow-sm" style="width: 44px; height: 44px; object-fit: contain;">
+        <span class="fs-4">{{ clinicaNombre }}</span>
+        <span class="badge bg-warning text-dark fw-bold ms-1" style="font-size: 0.72rem;">
+          <i class="bi bi-shield-shaded me-1"></i>PANEL CLÍNICO
+        </span>
+      </a>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navAdmin"
+        aria-controls="navAdmin"
+        aria-expanded="false"
+        aria-label="Abrir navegación interna"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navAdmin">
+        
+        <!-- Enlaces internos (solo visibles si el staff está autenticado) -->
+        @if (estaAutenticadoStaff) {
+          <ul class="navbar-nav ms-auto gap-2">
+            <li class="nav-item">
+              <a class="nav-link px-3 rounded-pill text-white" routerLink="/admin/citas" routerLinkActive="active bg-success text-white fw-bold">
+                <i class="bi bi-calendar-week me-1"></i> Agenda & Citas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link px-3 rounded-pill text-white" routerLink="/admin/mascotas" routerLinkActive="active bg-success text-white fw-bold">
+                <i class="bi bi-person-badge me-1"></i> Pacientes & Dueños
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link px-3 rounded-pill text-white" routerLink="/admin/historial" routerLinkActive="active bg-success text-white fw-bold">
+                <i class="bi bi-journal-medical me-1"></i> Historial Clínico
+              </a>
+            </li>
+          </ul>
+
+          <!-- Perfil del doctor y salir -->
+          <div class="d-flex align-items-center gap-2 ms-lg-3 mt-2 mt-lg-0">
+            <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-3 py-2 d-none d-lg-inline-block small">
+              <i class="bi bi-person-check-fill me-1"></i>{{ staffActual?.nombreCompleto || 'Personal Clínico' }}
+            </span>
+
+            <button
+              type="button"
+              class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1 d-flex align-items-center gap-1"
+              (click)="cerrarSesionStaff()"
+              title="Cerrar sesión de personal y volver a la web pública"
+            >
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
+        } @else {
+          <!-- Si está en la pantalla de login -->
+          <div class="ms-auto mt-2 mt-lg-0">
+            <a routerLink="/portal" class="btn btn-outline-light btn-sm rounded-pill px-3 py-1 d-flex align-items-center gap-1">
+              <i class="bi bi-arrow-left"></i>
+              <span>Volver a Portal Público</span>
+            </a>
+          </div>
+        }
+
+      </div>
+    </div>
+  </nav>
+}

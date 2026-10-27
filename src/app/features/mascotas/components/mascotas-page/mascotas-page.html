@@ -1,0 +1,586 @@
+<div class="pb-5">
+  <!-- Barra de Contexto y Registro Rápido -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill small fw-bold">
+          <i class="bi bi-heart-pulse-fill me-1"></i> Padrón de Pacientes
+        </span>
+        <span class="text-muted small d-none d-sm-inline">Panel clínico Master-Detail: Selección ágil con inspector de ficha médica en vivo</span>
+      </div>
+      <button type="button" class="btn btn-success rounded-pill px-4 py-2 shadow-sm d-flex align-items-center gap-2 ms-auto" (click)="abrirModalRegistro()">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span class="fw-semibold">Registrar Paciente</span>
+      </button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="mascotas$ | async as listaMascotas">
+    <ng-container *ngIf="filtrarMascotas(listaMascotas) as filtradas">
+      <div class="row g-4 align-items-start master-detail-container">
+        
+        <!-- ============================================================== -->
+        <!-- COLUMNA IZQUIERDA: MASTER LIST (Lista de Pacientes y Filtros)   -->
+        <!-- ============================================================== -->
+        <div class="col-12 col-lg-5 col-xl-5">
+          <!-- Tarjeta de Controles y Búsqueda -->
+          <div class="card border-0 shadow-sm rounded-4 p-3 mb-3 bg-white">
+            <!-- Barra de búsqueda instantánea -->
+            <div class="input-group mb-3">
+              <span class="input-group-text bg-light border-end-0 text-muted">
+                <i class="bi bi-search"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control bg-light border-start-0"
+                placeholder="Buscar por mascota, tutor, DNI o raza..."
+                [(ngModel)]="busqueda"
+                (ngModelChange)="onBusquedaChange()"
+              />
+              <button *ngIf="busqueda" class="btn btn-light border-start-0" type="button" (click)="limpiarBusqueda()" title="Limpiar búsqueda">
+                <i class="bi bi-x-lg text-muted"></i>
+              </button>
+            </div>
+
+            <!-- Filtros Rápidos de Especie (Pills interactivos) -->
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+              <button
+                type="button"
+                class="filtro-pill"
+                [class.active]="especieFiltro === 'TODAS'"
+                (click)="setEspecieFiltro('TODAS')">
+                Todas
+              </button>
+              <button
+                type="button"
+                class="filtro-pill"
+                [class.active]="especieFiltro === EspecieMascota.CANINO"
+                (click)="setEspecieFiltro(EspecieMascota.CANINO)">
+                <i class="bi bi-shield-shaded me-1"></i> Caninos
+              </button>
+              <button
+                type="button"
+                class="filtro-pill"
+                [class.active]="especieFiltro === EspecieMascota.FELINO"
+                (click)="setEspecieFiltro(EspecieMascota.FELINO)">
+                <i class="bi bi-moon-stars-fill me-1"></i> Felinos
+              </button>
+              <button
+                type="button"
+                class="filtro-pill"
+                [class.active]="especieFiltro === EspecieMascota.EXOTICO"
+                (click)="setEspecieFiltro(EspecieMascota.EXOTICO)">
+                <i class="bi bi-stars me-1"></i> Exóticos
+              </button>
+            </div>
+
+            <!-- Contador de resultados -->
+            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+              <span class="small text-muted">Mostrando {{ filtradas.length }} de {{ listaMascotas.length }} pacientes</span>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small">
+                {{ filtradas.length }} registros &bull; Pág. {{ paginaActual }} de {{ getTotalPaginas(filtradas) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Feed Paginado de Pacientes (Uniforme, sin scrollbar interno) -->
+          <div class="pacientes-feed-list" *ngIf="filtradas.length > 0; else sinResultadosMaster">
+            <div
+              *ngFor="let m of getPacientesPaginados(filtradas)"
+              class="paciente-item p-3"
+              [class.is-selected]="getPacienteActivo(filtradas)?.id === m.id"
+              (click)="seleccionarPaciente(m)"
+              role="button"
+              tabindex="0"
+            >
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                  <div class="d-flex align-items-center gap-3">
+                    <!-- Avatar con icono por especie -->
+                    <div
+                      class="avatar-especie"
+                      [ngClass]="m.especie === EspecieMascota.CANINO ? 'bg-success-subtle text-success' : (m.especie === EspecieMascota.FELINO ? 'bg-warning-subtle text-warning-emphasis' : 'bg-primary-subtle text-primary')">
+                      <i class="bi" [ngClass]="m.especie === EspecieMascota.CANINO ? 'bi-shield-shaded' : (m.especie === EspecieMascota.FELINO ? 'bi-moon-stars-fill' : 'bi-stars')"></i>
+                    </div>
+
+                    <div>
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="fw-bold fs-6 paciente-nombre text-dark">{{ m.nombre }}</span>
+                        <!-- Sexo badge -->
+                        <span
+                          class="badge px-1 py-0 small fw-semibold"
+                          [ngClass]="m.sexo === SexoMascota.MACHO ? 'bg-info-subtle text-info-emphasis' : 'bg-danger-subtle text-danger-emphasis'"
+                          [title]="'Sexo: ' + m.sexo">
+                          <i class="bi" [ngClass]="m.sexo === SexoMascota.MACHO ? 'bi-gender-male' : 'bi-gender-female'"></i>
+                        </span>
+                        <!-- Edad badge -->
+                        <span class="badge bg-light text-muted border px-2 py-0 small">
+                          {{ m.edad }} {{ m.edad === 1 ? 'año' : 'años' }}
+                        </span>
+                      </div>
+
+                      <!-- Especie & Raza -->
+                      <div class="d-flex align-items-center gap-1 mb-1">
+                        <span
+                          class="badge px-2 py-0 small fw-medium"
+                          [ngClass]="m.especie === EspecieMascota.CANINO ? 'bg-success-subtle text-success border border-success-subtle' : (m.especie === EspecieMascota.FELINO ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-primary-subtle text-primary border border-primary-subtle')">
+                          {{ m.especie }}
+                        </span>
+                        <span class="text-secondary small text-truncate" style="max-width: 140px;">
+                          &bull; {{ m.raza }}
+                        </span>
+                      </div>
+
+                      <!-- Dueño / Tutor -->
+                      <div class="small text-muted d-flex align-items-center gap-1">
+                        <i class="bi bi-person-fill text-success"></i>
+                        <span class="text-truncate" style="max-width: 170px;">{{ m.propietario.nombreCompleto }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Lado derecho del item: Peso y chevron indicador -->
+                  <div class="text-end d-flex flex-column align-items-end justify-content-between h-100">
+                    <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 rounded-pill small fw-semibold">
+                      {{ m.pesoActualKg }} kg
+                    </span>
+                    <div class="active-indicator text-success mt-2">
+                      <i class="bi bi-chevron-right fs-6"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+
+          <!-- Barra de Paginación Compacta (Elimina el scroll y nivela la altura) -->
+          <div class="card border-0 shadow-sm rounded-4 p-2 mt-3 bg-white" *ngIf="filtradas.length > 0">
+            <div class="d-flex justify-content-between align-items-center px-1 py-1">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary rounded-pill px-3 d-flex align-items-center gap-1"
+                [disabled]="paginaActual === 1"
+                (click)="cambiarPagina(paginaActual - 1, filtradas)">
+                <i class="bi bi-chevron-left"></i>
+                <span class="d-none d-sm-inline">Anterior</span>
+              </button>
+
+              <div class="d-flex align-items-center gap-1">
+                <span class="small text-muted me-1 d-none d-md-inline">Página</span>
+                <ng-container *ngFor="let p of getPaginasArray(getTotalPaginas(filtradas))">
+                  <button
+                    type="button"
+                    class="btn btn-sm rounded-circle p-0 pag-btn"
+                    [ngClass]="p === paginaActual ? 'btn-success text-white fw-bold shadow-sm' : 'btn-light text-dark'"
+                    (click)="cambiarPagina(p, filtradas)">
+                    {{ p }}
+                  </button>
+                </ng-container>
+                <span class="small text-muted ms-1">de {{ getTotalPaginas(filtradas) }}</span>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary rounded-pill px-3 d-flex align-items-center gap-1"
+                [disabled]="paginaActual === getTotalPaginas(filtradas)"
+                (click)="cambiarPagina(paginaActual + 1, filtradas)">
+                <span class="d-none d-sm-inline">Siguiente</span>
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty state si no hay resultados -->
+          <ng-template #sinResultadosMaster>
+            <div class="text-center py-5 bg-white rounded-4 shadow-sm border p-4">
+              <i class="bi bi-search fs-2 text-muted d-block mb-3"></i>
+              <h6 class="fw-bold text-dark">No se encontraron pacientes</h6>
+              <p class="text-muted small mb-3">No hay registros que coincidan con "{{ busqueda }}".</p>
+              <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" (click)="limpiarBusqueda(); setEspecieFiltro('TODAS')">
+                Limpiar Filtros
+              </button>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- COLUMNA DERECHA: DETAIL INSPECTOR (Ficha Médica en Vivo)        -->
+        <!-- ============================================================== -->
+        <div class="col-12 col-lg-7 col-xl-7">
+          <div *ngIf="getPacienteActivo(filtradas) as masc; else sinPacienteActivo" class="inspector-card">
+            
+            <!-- Hero Header de la Ficha Médica -->
+            <div class="inspector-hero">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="hero-avatar">
+                    <i class="bi" [ngClass]="masc.especie === EspecieMascota.CANINO ? 'bi-shield-shaded' : (masc.especie === EspecieMascota.FELINO ? 'bi-moon-stars-fill' : 'bi-stars')"></i>
+                  </div>
+                  <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <h3 class="fw-bold mb-0 text-white">{{ masc.nombre }}</h3>
+                      <span class="badge bg-white text-dark px-2 py-1 small fw-semibold">
+                        {{ masc.raza }}
+                      </span>
+                      <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle px-2 py-1 small fw-semibold">
+                        {{ masc.especie }}
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mt-1 text-white-50 small flex-wrap">
+                      <span>ID: <code class="text-light fw-bold">{{ masc.id }}</code></span>
+                      <span>&bull;</span>
+                      <span>Nacimiento: {{ masc.fechaNacimiento | date:'dd/MM/yyyy' }}</span>
+                      <span *ngIf="masc.fichaClinica.microchip">&bull;</span>
+                      <span *ngIf="masc.fichaClinica.microchip">Chip: <code class="text-warning-emphasis bg-warning-subtle px-1 rounded">{{ masc.fichaClinica.microchip }}</code></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botones de Acción Directa en Header -->
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3 shadow-sm" (click)="navegarAHistorial(masc)">
+                    <i class="bi bi-clock-history me-1"></i> Historial
+                  </button>
+                  <button type="button" class="btn btn-light text-success fw-bold btn-sm rounded-pill px-3 shadow-sm" (click)="navegarAAgendar(masc)">
+                    <i class="bi bi-calendar-plus-fill me-1"></i> Agendar Cita
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cuerpo del Inspector Médico -->
+            <div class="p-4">
+              <!-- Cuadrícula de Parámetros Biométricos -->
+              <div class="row g-2 mb-4">
+                <div class="col-6 col-md-3">
+                  <div class="stat-card text-center">
+                    <small class="text-muted d-block mb-1">Edad</small>
+                    <strong class="fs-5 text-dark">{{ masc.edad }}</strong>
+                    <span class="text-muted small ms-1">{{ masc.edad === 1 ? 'año' : 'años' }}</span>
+                  </div>
+                </div>
+                <div class="col-6 col-md-3">
+                  <div class="stat-card text-center">
+                    <small class="text-muted d-block mb-1">Peso Actual</small>
+                    <strong class="fs-5 text-success">{{ masc.pesoActualKg }}</strong>
+                    <span class="text-muted small ms-1">kg</span>
+                  </div>
+                </div>
+                <div class="col-6 col-md-3">
+                  <div class="stat-card text-center">
+                    <small class="text-muted d-block mb-1">Esterilizado</small>
+                    <strong class="fs-5" [ngClass]="masc.fichaClinica.esterilizado ? 'text-success' : 'text-secondary'">
+                      {{ masc.fichaClinica.esterilizado ? 'Sí' : 'No' }}
+                    </strong>
+                  </div>
+                </div>
+                <div class="col-6 col-md-3">
+                  <div class="stat-card text-center">
+                    <small class="text-muted d-block mb-1">Sexo</small>
+                    <strong class="fs-5 text-dark">{{ masc.sexo }}</strong>
+                    <i class="bi ms-1" [ngClass]="masc.sexo === SexoMascota.MACHO ? 'bi-gender-male text-info' : 'bi-gender-female text-danger'"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloque 1: Propietario / Titular Responsable -->
+              <div class="card border rounded-4 p-3 mb-4 bg-light-subtle shadow-none">
+                <div class="section-title">
+                  <i class="bi bi-person-bounding-box"></i> Titular / Dueño Responsable
+                </div>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                  <div>
+                    <h6 class="fw-bold text-dark mb-1 fs-6">{{ masc.propietario.nombreCompleto }}</h6>
+                    <div class="text-muted small mb-1">
+                      DNI: <strong class="text-dark">{{ masc.propietario.documentoIdentidad }}</strong> &bull; Correo: <strong>{{ masc.propietario.email || 'No registrado' }}</strong>
+                    </div>
+                    <div class="text-muted small">
+                      <i class="bi bi-geo-alt-fill text-secondary me-1"></i> {{ masc.propietario.direccion || 'Lima' }}
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <a [href]="'tel:' + masc.propietario.telefono" class="btn btn-outline-success btn-sm rounded-pill px-3 d-flex align-items-center gap-1">
+                      <i class="bi bi-telephone-fill"></i>
+                      <span>{{ masc.propietario.telefono }}</span>
+                    </a>
+                    <a [href]="'https://wa.me/51' + masc.propietario.telefono" target="_blank" class="btn btn-success btn-sm rounded-pill px-3 d-flex align-items-center gap-1" title="Contactar por WhatsApp">
+                      <i class="bi bi-whatsapp"></i>
+                      <span>WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloque 2: Alertas Médicas y Condiciones -->
+              <div class="row g-3 mb-4">
+                <div class="col-12">
+                  <div class="border rounded-4 p-3 bg-white">
+                    <div class="section-title">
+                      <i class="bi bi-exclamation-triangle-fill text-warning"></i> Alertas y Restricciones Médicas
+                    </div>
+                    <div *ngIf="masc.fichaClinica.alergias && masc.fichaClinica.alergias.length > 0; else sinAlergiasInspector" class="alert alert-danger py-2 px-3 small mb-0 rounded-3 border-danger-subtle d-flex align-items-center gap-2">
+                      <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
+                      <div>
+                        <strong>Paciente alérgico o con restricción:</strong> {{ masc.fichaClinica.alergias.join(', ') }}
+                      </div>
+                    </div>
+                    <ng-template #sinAlergiasInspector>
+                      <div class="d-flex align-items-center gap-2 text-success small bg-success-subtle p-2 px-3 rounded-3 border border-success-subtle">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Sin alergias conocidas ni condiciones especiales registradas en la ficha.</span>
+                      </div>
+                    </ng-template>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloque 3: Protocolo Polimórfico de Vacunación Preventiva -->
+              <div class="border rounded-4 p-3 mb-4 bg-white">
+                <div class="section-title">
+                  <i class="bi bi-shield-plus text-success"></i> Esquema Preventivo de Vacunación (Taxonomía: {{ masc.especie }})
+                </div>
+                <ul class="list-group list-group-flush rounded-3">
+                  <li class="list-group-item bg-transparent px-0 py-2 small d-flex align-items-center gap-2" *ngFor="let v of masc.getProtocoloVacunacion()">
+                    <span class="badge bg-success-subtle text-success rounded-circle p-1">
+                      <i class="bi bi-check-lg fw-bold"></i>
+                    </span>
+                    <span class="fw-medium text-dark">{{ v }}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Bloque 4: Guía de Cuidado y Nutrición Preventiva (Polimórfico) -->
+              <div class="alert alert-success py-3 px-3 mb-4 rounded-4 border-0 bg-success-subtle">
+                <div class="d-flex align-items-center gap-2 fw-bold text-success-emphasis mb-1">
+                  <i class="bi bi-heart-pulse-fill"></i> Recomendación de Cuidado Específica:
+                </div>
+                <p class="mb-0 text-dark small fst-italic">{{ masc.getRecomendacionesCuidado() }}</p>
+              </div>
+
+              <!-- Acciones de Acceso Rápido al final del Inspector -->
+              <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 pt-3 border-top">
+                <span class="small text-muted">Acciones directas para <strong>{{ masc.nombre }}</strong>:</span>
+                <div class="d-flex gap-2 w-100 w-sm-auto">
+                  <button type="button" class="btn btn-outline-success rounded-pill px-4 flex-fill" (click)="navegarAHistorial(masc)">
+                    <i class="bi bi-journal-medical me-1"></i> Ver Historial Completo
+                  </button>
+                  <button type="button" class="btn btn-success rounded-pill px-4 flex-fill" (click)="navegarAAgendar(masc)">
+                    <i class="bi bi-calendar-plus me-1"></i> Agendar Cita
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state cuando no hay paciente activo -->
+          <ng-template #sinPacienteActivo>
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+              <i class="bi bi-clipboard2-pulse fs-1 text-muted d-block mb-3"></i>
+              <h5 class="fw-bold text-dark">Ningún paciente seleccionado</h5>
+              <p class="text-muted small">Selecciona un paciente del padrón en la lista de la izquierda para inspeccionar su ficha clínica integral.</p>
+            </div>
+          </ng-template>
+        </div>
+
+      </div>
+    </ng-container>
+  </ng-container>
+</div>
+
+<!-- Modal Registro con Jerarquía Dominante: DUEÑO PRIMERO -> LUEGO MASCOTA -->
+<div class="modal fade show d-block p-3 p-md-4" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" *ngIf="mostrarModalRegistro">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content rounded-4 border-0 shadow overflow-hidden">
+      <div class="modal-header bg-success text-white border-0 py-3">
+        <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark-medical"></i> Registro de Nuevo Paciente
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarModalRegistro()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- Alerta de éxito -->
+        <div class="alert alert-success d-flex align-items-center gap-2" *ngIf="guardadoExitoso">
+          <i class="bi bi-check-circle-fill fs-5"></i>
+          <div><strong>¡Paciente registrado exitosamente!</strong> Actualizando catálogo...</div>
+        </div>
+
+        <form [formGroup]="mascotaForm" (ngSubmit)="guardarMascota()">
+          <!-- PASO 1: JERARQUÍA DOMINANTE - DUEÑO / TITULAR -->
+          <div class="p-3 bg-light rounded-4 border mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+              <h6 class="text-success fw-bold text-uppercase mb-0">
+                <i class="bi bi-person-fill me-1"></i> 1. Dueño / Titular Responsable *
+              </h6>
+
+              <!-- Switch para elegir entre Dueño Existente o Nuevo -->
+              <div class="btn-group btn-group-sm" role="group" *ngIf="propietarios.length > 0">
+                <button
+                  type="button"
+                  class="btn rounded-pill me-1"
+                  [ngClass]="asignarDuenoExistente ? 'btn-success text-white' : 'btn-outline-secondary'"
+                  (click)="toggleModoDueno(true)">
+                  Dueño Ya Registrado
+                </button>
+                <button
+                  type="button"
+                  class="btn rounded-pill"
+                  [ngClass]="!asignarDuenoExistente ? 'btn-success text-white' : 'btn-outline-secondary'"
+                  (click)="toggleModoDueno(false)">
+                  + Nuevo Dueño
+                </button>
+              </div>
+            </div>
+
+            <!-- Opción A: Dueño Existente con Sub-modal de Búsqueda -->
+            <div *ngIf="asignarDuenoExistente && propietarios.length > 0">
+              <!-- Tarjeta de Dueño Seleccionado -->
+              <div *ngIf="getPropietarioSeleccionado() as prop" class="card border-0 bg-white p-3 shadow-sm rounded-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge rounded-circle p-2 bg-success-subtle text-success fs-5">
+                      <i class="bi bi-person-check-fill"></i>
+                    </span>
+                    <div>
+                      <h6 class="mb-0 fw-bold text-dark">{{ prop.nombreCompleto }}</h6>
+                      <small class="text-muted">
+                        DNI: <strong>{{ prop.documentoIdentidad }}</strong> &bull; Tel: <strong>{{ prop.telefono }}</strong>
+                      </small>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" (click)="abrirModalBuscarDueno()">
+                    <i class="bi bi-search me-1"></i> Cambiar Dueño
+                  </button>
+                </div>
+              </div>
+
+              <!-- Si aún no ha seleccionado ningún dueño -->
+              <div *ngIf="!getPropietarioSeleccionado()" class="text-center py-3 bg-white rounded-3 border border-dashed">
+                <p class="text-muted small mb-2">No se ha seleccionado ningún cliente titular para este paciente.</p>
+                <button type="button" class="btn btn-success btn-sm rounded-pill px-4" (click)="abrirModalBuscarDueno()">
+                  <i class="bi bi-search me-1"></i> Buscar Dueño por Nombre o DNI
+                </button>
+                <div class="text-danger small mt-2" *ngIf="esInvalido('propietarioExistenteId')">
+                  Debe seleccionar al cliente responsable.
+                </div>
+              </div>
+            </div>
+
+            <!-- Opción B: Nuevo Dueño -->
+            <div *ngIf="!asignarDuenoExistente || propietarios.length === 0">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold small">Nombre Completo del Dueño *</label>
+                  <input type="text" class="form-control" formControlName="propietarioNombre" placeholder="Ej. Mariana Torres Silva" [class.is-invalid]="esInvalido('propietarioNombre')"/>
+                  <div class="invalid-feedback">Nombre requerido (mínimo 3 letras).</div>
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold small">DNI (8 dígitos) *</label>
+                  <input type="text" maxlength="8" class="form-control" formControlName="propietarioDni" placeholder="8 dígitos" [class.is-invalid]="esInvalido('propietarioDni')"/>
+                  <div class="invalid-feedback">DNI de 8 dígitos requerido.</div>
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold small">Teléfono / Celular *</label>
+                  <input type="text" maxlength="9" class="form-control" formControlName="propietarioTelefono" placeholder="9 dígitos" [class.is-invalid]="esInvalido('propietarioTelefono')"/>
+                  <div class="invalid-feedback">Teléfono de 9 dígitos.</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold small">Correo Electrónico *</label>
+                  <input type="email" class="form-control" formControlName="propietarioEmail" placeholder="correo@ejemplo.com" [class.is-invalid]="esInvalido('propietarioEmail')"/>
+                  <div class="invalid-feedback">Correo válido requerido.</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold small">Dirección Residencial</label>
+                  <input type="text" class="form-control" formControlName="propietarioDireccion" placeholder="Ej. Calle Los Jazmines 450"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PASO 2: INFORMACIÓN DE LA MASCOTA -->
+          <h6 class="text-success fw-bold text-uppercase border-bottom pb-2 mb-3">
+            <i class="bi bi-heart me-1"></i> 2. Información de la Mascota / Paciente
+          </h6>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Nombre de la Mascota *</label>
+              <input type="text" class="form-control" formControlName="nombre" placeholder="Ej. Toby" [class.is-invalid]="esInvalido('nombre')"/>
+              <div class="invalid-feedback">El nombre es requerido (mínimo 2 letras).</div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-semibold small">Tipo / Especie *</label>
+              <select class="form-select" formControlName="especie" [class.is-invalid]="esInvalido('especie')">
+                <option [value]="EspecieMascota.CANINO">Canino</option>
+                <option [value]="EspecieMascota.FELINO">Felino</option>
+                <option [value]="EspecieMascota.EXOTICO">Exótico</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-semibold small">Sexo *</label>
+              <select class="form-select" formControlName="sexo">
+                <option [value]="SexoMascota.MACHO">Macho</option>
+                <option [value]="SexoMascota.HEMBRA">Hembra</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Raza / Variedad (Llenado libre) *</label>
+              <input type="text" class="form-control" formControlName="raza" placeholder="Ej. Golden, Shitzu, Persa, Conejo..." [class.is-invalid]="esInvalido('raza')"/>
+              <div class="invalid-feedback">La raza o variedad es obligatoria.</div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Fecha Nacimiento *</label>
+              <input type="date" class="form-control" formControlName="fechaNacimiento" [class.is-invalid]="esInvalido('fechaNacimiento')"/>
+              <div class="invalid-feedback">Fecha obligatoria para calcular edad.</div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Peso Actual (kg) *</label>
+              <input type="number" step="0.1" class="form-control" formControlName="pesoActualKg" placeholder="Ej. 8.5" [class.is-invalid]="esInvalido('pesoActualKg')"/>
+              <div class="invalid-feedback">Ingrese un peso válido (> 0.2 kg).</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Código Microchip (Opcional)</label>
+              <input type="text" class="form-control" formControlName="microchip" placeholder="Ej. 981098000111222"/>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Alergias o Condiciones (separar por coma)</label>
+              <input type="text" class="form-control" formControlName="alergias" placeholder="Ej. Pollo, Penicilina"/>
+            </div>
+
+            <div class="col-12">
+              <div class="form-check form-switch mt-1">
+                <input class="form-check-input" type="checkbox" id="checkEsterilizado" formControlName="esterilizado">
+                <label class="form-check-label fw-semibold small" for="checkEsterilizado">Paciente esterilizado / castrado</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer border-0 px-0 pb-0 mt-4">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" (click)="cerrarModalRegistro()">Cancelar</button>
+            <button type="submit" class="btn btn-success rounded-pill px-4" [disabled]="mascotaForm.invalid || guardadoExitoso">
+              <i class="bi bi-save me-1"></i> Guardar Paciente
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUB-MODAL LOOKUP: Componente reutilizable compartido -->
+<app-dueno-lookup-modal
+  [visible]="mostrarModalBuscarDueno"
+  [propietarios]="propietarios"
+  (cerrar)="cerrarModalBuscarDueno()"
+  (seleccionar)="onDuenoSeleccionado($event)"
+  (registrarNuevo)="activarRegistroNuevoDueno()"
+></app-dueno-lookup-modal>
