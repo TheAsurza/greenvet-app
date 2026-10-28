@@ -148,14 +148,14 @@ La aplicación cuenta con una **separación absoluta entre el entorno público p
   * *Lic. Roberto Gómez* (Recepción y Turnos)
 
 #### Paso 2: Centro de Control y Dashboard Clínico (`/admin/dashboard`)
-Al autenticarse, el sistema aterriza automáticamente en el **Dashboard Clínico 360°**, integrado dentro del nuevo **Sidebar Dark Teal** institucional:
+Al autenticarse, el sistema aterriza automáticamente en el **Dashboard Clínico 360°**, integrado dentro del Sidebar institucional:
 1. **Hero Banner Dinámico:** Saludo según la hora (`Buenos días/tardes`), métricas del turno y 3 accesos rápidos (`Agendar Cita`, `Nueva Consulta`, `Registrar Mascota`).
-2. **4 Tarjetas KPI Vibrantes:**
+2. **4 Tarjetas KPI:**
    * *Citas de Hoy:* Conteo del día y pendientes con watermark decorativo.
    * *Ventas del Mes:* Monto estimado en Soles con badge `+42%`.
    * *Mascotas Activas:* Padrón general clasificado y total de clientes.
    * *Urgencias del Día:* Casos prioritarios con triaje activo.
-3. **Gráficos Vivos (SVG Nativo):**
+3. **Gráficos (SVG Nativo):**
    * *Atenciones de los últimos 6 meses:* Gráfico de barras con línea de tendencia y tooltip.
    * *Pacientes por Especie:* Donut Chart calculado en tiempo real mediante POO (`Canino`, `Felino`, `Exotico`).
 4. **Mesa Operativa:** Tabla inmediata de pacientes de hoy con directiva `[appCitaUrgente]`, pipe `estadoBadge` y botón directo de atención.
