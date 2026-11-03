@@ -109,8 +109,14 @@
 
   &:not(:disabled):hover:not(.slot-selected) {
     transform: translateY(-1px);
-    border-color: #0f766e;
-    box-shadow: 0 3px 8px rgba(15, 118, 110, 0.12);
+    background: #0f766e !important;
+    color: #ffffff !important;
+    border-color: #0f766e !important;
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+
+    .badge-estado-slot {
+      color: #ffffff !important;
+    }
   }
 
   &:disabled {

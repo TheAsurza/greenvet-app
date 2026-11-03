@@ -22,28 +22,41 @@ export class AuthStaffService {
   // Lista de personal autorizado de la clínica GreenVet
   public readonly PERSONAL_AUTORIZADO: StaffUsuario[] = [
     {
+      id: 'staff-admin',
+      nombreCompleto: 'Administración General GreenVet',
+      rol: 'Dirección Médica & Super-Admin',
+      email: 'admin@greenvet.pe'
+    },
+    {
       id: 'staff-1',
       nombreCompleto: 'Dra. Camila Soto',
-      rol: 'Médica Veterinaria Directora',
+      rol: 'Médica Veterinaria (Cirugía)',
       email: 'camila.soto@greenvet.pe',
       colegiatura: 'CMVP 8945'
     },
     {
       id: 'staff-2',
       nombreCompleto: 'Dr. Alejandro Rivas',
-      rol: 'Especialista en Cirugía y Felinos',
+      rol: 'Especialista en Medicina Felina',
       email: 'alejandro.rivas@greenvet.pe',
       colegiatura: 'CMVP 7632'
     },
     {
       id: 'staff-3',
       nombreCompleto: 'Dra. Andrea Beltrán',
-      rol: 'Medicina Preventiva y Exóticos',
+      rol: 'Medicina Preventiva & Exóticos',
       email: 'andrea.beltran@greenvet.pe',
       colegiatura: 'CMVP 9120'
     },
     {
       id: 'staff-4',
+      nombreCompleto: 'Dr. Martín Valdivia',
+      rol: 'Traumatología & Cirugía Ortopédica',
+      email: 'martin.valdivia@greenvet.pe',
+      colegiatura: 'CMVP 6410'
+    },
+    {
+      id: 'staff-5',
       nombreCompleto: 'Lic. Roberto Gómez',
       rol: 'Administrador de Recepción y Turnos',
       email: 'roberto.gomez@greenvet.pe'

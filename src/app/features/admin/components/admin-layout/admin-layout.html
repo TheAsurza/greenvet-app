@@ -168,10 +168,16 @@
           </span>
         </div>
 
-        <!-- Indicador de Turno / Guardia Diurna Activa -->
-        <div class="d-none d-xl-flex align-items-center gap-2 px-3 py-1 rounded-pill border" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25) !important;">
-          <span class="status-dot-pulse"></span>
-          <span class="fw-semibold text-dark" style="font-size: 0.78rem;">Turno Diurno Activo</span>
+        <!-- Indicador de Turno / Guardia Dinámica (Diurno vs Guardia Nocturna 24/7) -->
+        <div
+          class="d-none d-xl-flex align-items-center gap-2 px-3 py-1 rounded-pill border"
+          [style.background]="esTurnoDiurno ? 'rgba(16, 185, 129, 0.08)' : 'rgba(59, 130, 246, 0.08)'"
+          [style.borderColor]="esTurnoDiurno ? 'rgba(16, 185, 129, 0.35) !important' : 'rgba(59, 130, 246, 0.35) !important'"
+          [title]="esTurnoDiurno ? 'Horario regular de consultorios clínicos (08:00 - 20:00)' : 'Horario de guardia veterinaria nocturna y urgencias 24/7'"
+        >
+          <span class="status-dot-pulse" [class.bg-primary]="!esTurnoDiurno"></span>
+          <i class="bi" [class.bi-sun-fill]="esTurnoDiurno" [class.bi-moon-stars-fill]="!esTurnoDiurno" [class.text-success]="esTurnoDiurno" [class.text-primary]="!esTurnoDiurno"></i>
+          <span class="fw-semibold text-dark" style="font-size: 0.78rem;">{{ etiquetaTurno }}</span>
         </div>
 
         <!-- Avatar y Perfil de Usuario Clínico -->

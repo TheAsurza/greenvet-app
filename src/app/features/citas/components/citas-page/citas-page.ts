@@ -82,9 +82,10 @@ export class CitasPageComponent implements OnInit {
 
   public motivosDisponibles = Object.values(MotivoConsulta);
   public veterinarios = [
-    'Dra. Camila Soto (Médica Veterinaria)',
-    'Dr. Alejandro Rivas (Especialista Felino y Cirugía)',
-    'Dra. Andrea Beltrán (Medicina Preventiva)'
+    'Dra. Camila Soto (Cirugía & Tejidos Blandos)',
+    'Dr. Alejandro Rivas (Especialista en Medicina Felina)',
+    'Dra. Andrea Beltrán (Medicina Preventiva & Exóticos)',
+    'Dr. Martín Valdivia (Traumatología & Ortopedia)'
   ];
 
   constructor(

@@ -65,6 +65,21 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     return this.authStaffService.getStaffActual();
   }
 
+  /**
+   * Determina si la clínica se encuentra en turno diurno regular (08:00 a 19:59)
+   * o en guardia nocturna de emergencias (20:00 a 07:59).
+   */
+  public get esTurnoDiurno(): boolean {
+    const hora = this.fechaActual.getHours();
+    return hora >= 8 && hora < 20;
+  }
+
+  public get etiquetaTurno(): string {
+    return this.esTurnoDiurno
+      ? 'Turno Diurno Activo'
+      : 'Guardia Nocturna & Urgencias';
+  }
+
   public toggleSidebar(): void {
     this.sidebarAbierto = !this.sidebarAbierto;
   }
@@ -75,7 +90,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   public cerrarSesion(): void {
     this.authStaffService.logout();
-    this.router.navigate(['/portal']);
+    this.router.navigate(['/admin/login']);
   }
 
   private actualizarTitulos(url: string): void {

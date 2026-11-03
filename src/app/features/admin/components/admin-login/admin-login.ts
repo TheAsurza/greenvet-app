@@ -30,7 +30,8 @@ export class AdminLoginComponent implements OnInit {
       return;
     }
 
-    this.personalDisponible = this.authStaffService.PERSONAL_AUTORIZADO;
+    // Filtrar personal médico y administrativo para los botones de acceso rápido (excluyendo la cuenta genérica admin)
+    this.personalDisponible = this.authStaffService.PERSONAL_AUTORIZADO.filter(s => s.id !== 'staff-admin');
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/admin/dashboard';
 
     this.loginForm = this.fb.group({

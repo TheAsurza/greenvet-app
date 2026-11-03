@@ -36,6 +36,8 @@ export class PortalPageComponent implements OnInit, OnDestroy {
 
   // Propietario reconocido (solo para auto-completar contacto y mascotas en el formulario)
   public propietarioEncontrado: Propietario | null = null;
+  public busquedaDniRealizada: boolean = false;
+  public dniConsultado: string = '';
   public mascotasDelPropietario: Mascota[] = [];
   public esNuevaMascota: boolean = false;
 
@@ -50,6 +52,40 @@ export class PortalPageComponent implements OnInit, OnDestroy {
   public EspecieMascota = EspecieMascota;
   public motivosDisponibles = Object.values(MotivoConsulta);
   public especiesDisponibles = Object.values(EspecieMascota);
+
+  // Catálogo de Especialistas Clínicos
+  public readonly ESPECIALISTAS = [
+    {
+      id: 'auto',
+      nombre: 'Asignación Automática según Motivo y Especie (Recomendado)',
+      especialidad: 'Triaje Clínico Optimizado',
+      horarios: 'Lunes a Domingo (08:00 - 18:00)'
+    },
+    {
+      id: 'camila',
+      nombre: 'Dra. Camila Soto',
+      especialidad: 'Cirugía & Tejidos Blandos',
+      horarios: 'Lunes, Miércoles y Viernes (08:00 - 14:00)'
+    },
+    {
+      id: 'alejandro',
+      nombre: 'Dr. Alejandro Rivas',
+      especialidad: 'Medicina Felina & Manejo Cat-Friendly',
+      horarios: 'Martes, Jueves y Sábados (09:00 - 17:00)'
+    },
+    {
+      id: 'andrea',
+      nombre: 'Dra. Andrea Beltrán',
+      especialidad: 'Medicina Preventiva & Animales Exóticos',
+      horarios: 'Lunes a Viernes (08:00 - 16:00)'
+    },
+    {
+      id: 'martin',
+      nombre: 'Dr. Martín Valdivia',
+      especialidad: 'Traumatología & Cirugía Ortopédica',
+      horarios: 'Miércoles a Sábados (10:00 - 18:00)'
+    }
+  ];
 
   // Horarios de atención clínica (08:00 a 18:00)
   public readonly HORAS_CLINICAS = [
@@ -117,6 +153,7 @@ export class PortalPageComponent implements OnInit, OnDestroy {
 
       // Datos de la Cita
       motivo: [MotivoConsulta.CONSULTA_GENERAL, [Validators.required]],
+      especialistaId: ['auto'],
       notas: [''],
       fecha: [this.fechaSeleccionada, [Validators.required]],
       hora: ['', [Validators.required]]
@@ -128,8 +165,13 @@ export class PortalPageComponent implements OnInit, OnDestroy {
   public buscarPorDni(dniManual?: string): void {
     const dni = (dniManual || this.reservaForm.get('documentoIdentidad')?.value || '').trim();
     if (!/^[0-9]{8}$/.test(dni)) {
+      this.busquedaDniRealizada = false;
+      this.dniConsultado = '';
       return;
     }
+
+    this.busquedaDniRealizada = true;
+    this.dniConsultado = dni;
 
     const propietarios = this.mascotasService.getPropietarios();
     const encontrado = propietarios.find(p => p.documentoIdentidad === dni);
@@ -262,6 +304,23 @@ export class PortalPageComponent implements OnInit, OnDestroy {
 
     const fechaHora = `${this.fechaSeleccionada}T${this.horaSeleccionada}`;
 
+    // Determinar especialista asignado según selección del cliente o triaje por motivo/especie
+    let doctorAsignado = 'Dra. Camila Soto (Cirugía & Tejidos Blandos)';
+    if (v.especialistaId && v.especialistaId !== 'auto') {
+      const esp = this.ESPECIALISTAS.find(e => e.id === v.especialistaId);
+      if (esp) {
+        doctorAsignado = `${esp.nombre} (${esp.especialidad})`;
+      }
+    } else {
+      if (v.especie === EspecieMascota.FELINO) {
+        doctorAsignado = 'Dr. Alejandro Rivas (Especialista en Medicina Felina)';
+      } else if (v.especie === EspecieMascota.EXOTICO || v.motivo === MotivoConsulta.VACUNACION) {
+        doctorAsignado = 'Dra. Andrea Beltrán (Medicina Preventiva & Exóticos)';
+      } else if (v.motivo === MotivoConsulta.CIRUGIA) {
+        doctorAsignado = 'Dr. Martín Valdivia (Traumatología & Cirugía Ortopédica)';
+      }
+    }
+
     const nuevaCita: Cita = {
       id: `cita-web-${Date.now().toString().slice(-6)}`,
       mascotaId,
@@ -271,7 +330,7 @@ export class PortalPageComponent implements OnInit, OnDestroy {
       fechaHora,
       motivo: v.motivo,
       estado: EstadoCita.CONFIRMADA,
-      veterinarioAsignado: 'Dr. Asignado de Guardia',
+      veterinarioAsignado: doctorAsignado,
       notas: v.notas ? `[Reserva Online] ${v.notas.trim()}` : '[Reserva Online]'
     };
 

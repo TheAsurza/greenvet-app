@@ -61,14 +61,34 @@
                     class="btn btn-outline-teal px-3 fw-semibold d-inline-flex align-items-center gap-1"
                     type="button"
                     (click)="buscarPorDni()"
-                    title="Verificar si ya estás registrado para autocompletar tus datos y mascotas"
+                    title="Consultar DNI en la base de datos para autocompletar tus datos y mascotas"
                   >
-                    <i class="bi bi-search"></i>
-                    <span>Verificar</span>
+                    <i class="bi bi-person-bounding-box"></i>
+                    <span>Consultar DNI</span>
                   </button>
                 </div>
                 @if (reservaForm.get('documentoIdentidad')?.touched && reservaForm.get('documentoIdentidad')?.invalid) {
                   <small class="text-danger d-block mt-1">Ingresa un DNI peruano válido de 8 dígitos numéricos.</small>
+                }
+
+                <!-- Feedback contextual según resultado de búsqueda de DNI -->
+                @if (busquedaDniRealizada) {
+                  @if (propietarioEncontrado) {
+                    <div class="alert alert-success d-flex align-items-center gap-2 py-2 px-3 mt-2 rounded-3 small mb-0 border-0 bg-success-subtle text-success-emphasis" role="status">
+                      <i class="bi bi-check-circle-fill fs-6"></i>
+                      <span>
+                        ¡Hola de nuevo, <strong>{{ propietarioEncontrado.nombreCompleto }}</strong>! Se autocompletaron tus datos y 
+                        <strong>{{ mascotasDelPropietario.length }}</strong> {{ mascotasDelPropietario.length === 1 ? 'mascota registrada' : 'mascotas registradas' }}.
+                      </span>
+                    </div>
+                  } @else {
+                    <div class="alert alert-info d-flex align-items-center gap-2 py-2 px-3 mt-2 rounded-3 small mb-0 border-0 bg-info-subtle text-info-emphasis" role="status">
+                      <i class="bi bi-info-circle-fill fs-6"></i>
+                      <span>
+                        <strong>DNI no registrado ({{ dniConsultado }}):</strong> ¡Bienvenido(a) a GreenVet! Por favor completa tus datos y los de tu mascota para crear tu ficha clínica.
+                      </span>
+                    </div>
+                  }
                 }
 
                 <!-- Accesos rápidos para clientes registrados de prueba -->
@@ -255,6 +275,25 @@
                 }
               </div>
 
+              <!-- Selector de Especialista / Médico Clínico Preferido -->
+              <div class="mb-3">
+                <label for="selectEspecialista" class="form-label small fw-bold text-dark d-flex justify-content-between align-items-center">
+                  <span>Médico Veterinario o Especialidad Preferida (Opcional)</span>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle">Disponibilidad rotativa</span>
+                </label>
+                <select id="selectEspecialista" class="form-select" formControlName="especialistaId">
+                  @for (esp of ESPECIALISTAS; track esp.id) {
+                    <option [value]="esp.id">
+                      {{ esp.nombre }} &bull; {{ esp.especialidad }} ({{ esp.horarios }})
+                    </option>
+                  }
+                </select>
+                <small class="text-muted d-block mt-1">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Si dejas la asignación automática, nuestro triaje asignará al especialista clínico más idóneo según la especie y motivo de atención.
+                </small>
+              </div>
+
               <div>
                 <label for="inputSintomas" class="form-label small fw-bold text-dark">
                   Observaciones o síntomas previos (opcional)
@@ -322,11 +361,11 @@
                         <i class="bi me-1" [class.bi-clock]="slot.disponible" [class.bi-lock-fill]="!slot.disponible"></i>
                         <span class="fw-bold">{{ slot.hora }}</span>
                         @if (!slot.disponible) {
-                          <span class="d-block text-danger small fw-semibold" style="font-size: 0.75rem;">Ocupado</span>
+                          <span class="d-block text-danger small fw-semibold badge-estado-slot" style="font-size: 0.75rem;">Ocupado</span>
                         } @else if (horaSeleccionada === slot.hora) {
-                          <span class="d-block text-white small fw-semibold" style="font-size: 0.75rem;">Seleccionado</span>
+                          <span class="d-block text-white small fw-semibold badge-estado-slot" style="font-size: 0.75rem;">Seleccionado</span>
                         } @else {
-                          <span class="d-block text-success small fw-semibold" style="font-size: 0.75rem;">Libre</span>
+                          <span class="d-block text-success small fw-semibold badge-estado-slot" style="font-size: 0.75rem;">Libre</span>
                         }
                       </button>
                     </div>
