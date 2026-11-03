@@ -208,8 +208,15 @@ export class PortalPageComponent implements OnInit, OnDestroy {
         this.habilitarNuevaMascota();
       }
     } else {
+      // Cliente no registrado: resetear datos del titular anterior y de la mascota
       this.propietarioEncontrado = null;
       this.mascotasDelPropietario = [];
+      this.reservaForm.patchValue({
+        documentoIdentidad: dni,
+        nombreCompleto: '',
+        telefono: '',
+        email: ''
+      });
       this.habilitarNuevaMascota();
     }
   }
