@@ -53,37 +53,52 @@ export class PortalPageComponent implements OnInit, OnDestroy {
   public motivosDisponibles = Object.values(MotivoConsulta);
   public especiesDisponibles = Object.values(EspecieMascota);
 
-  // Catálogo de Especialistas Clínicos
+  // Catálogo de Especialistas Clínicos con días (0=Dom, 1=Lun, ..., 6=Sáb) y rango de horas válidas
   public readonly ESPECIALISTAS = [
     {
       id: 'auto',
       nombre: 'Asignación Automática según Motivo y Especie (Recomendado)',
       especialidad: 'Triaje Clínico Optimizado',
-      horarios: 'Lunes a Domingo (08:00 - 18:00)'
+      horarios: 'Lunes a Sábado (08:00 - 18:00)',
+      diasSemana: [1, 2, 3, 4, 5, 6],
+      horaInicio: 8,
+      horaFin: 18
     },
     {
       id: 'camila',
       nombre: 'Dra. Camila Soto',
       especialidad: 'Cirugía & Tejidos Blandos',
-      horarios: 'Lunes, Miércoles y Viernes (08:00 - 14:00)'
+      horarios: 'Lunes, Miércoles y Viernes (08:00 - 14:00)',
+      diasSemana: [1, 3, 5],
+      horaInicio: 8,
+      horaFin: 14
     },
     {
       id: 'alejandro',
       nombre: 'Dr. Alejandro Rivas',
       especialidad: 'Medicina Felina & Manejo Cat-Friendly',
-      horarios: 'Martes, Jueves y Sábados (09:00 - 17:00)'
+      horarios: 'Martes, Jueves y Sábados (09:00 - 17:00)',
+      diasSemana: [2, 4, 6],
+      horaInicio: 9,
+      horaFin: 17
     },
     {
       id: 'andrea',
       nombre: 'Dra. Andrea Beltrán',
       especialidad: 'Medicina Preventiva & Animales Exóticos',
-      horarios: 'Lunes a Viernes (08:00 - 16:00)'
+      horarios: 'Lunes a Viernes (08:00 - 16:00)',
+      diasSemana: [1, 2, 3, 4, 5],
+      horaInicio: 8,
+      horaFin: 16
     },
     {
       id: 'martin',
       nombre: 'Dr. Martín Valdivia',
       especialidad: 'Traumatología & Cirugía Ortopédica',
-      horarios: 'Miércoles a Sábados (10:00 - 18:00)'
+      horarios: 'Miércoles a Sábados (10:00 - 18:00)',
+      diasSemana: [3, 4, 5, 6],
+      horaInicio: 10,
+      horaFin: 18
     }
   ];
 
@@ -233,21 +248,55 @@ export class PortalPageComponent implements OnInit, OnDestroy {
     this.mensajeError = '';
   }
 
+  public onEspecialistaChange(): void {
+    this.horaSeleccionada = '';
+    this.reservaForm.patchValue({ hora: '' });
+    this.calcularSlotsDisponibles(this.fechaSeleccionada);
+  }
+
   public calcularSlotsDisponibles(fecha: string): void {
     const todasLasCitas = this.citasService.getCitas();
+    const espId = this.reservaForm?.get('especialistaId')?.value || 'auto';
+    const especialista = this.ESPECIALISTAS.find(e => e.id === espId) || this.ESPECIALISTAS[0];
+
+    // Obtener día de la semana (0 = domingo, 1 = lunes, ..., 6 = sábado)
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    const fechaObj = new Date(anio, mes - 1, dia);
+    const diaSemana = fechaObj.getDay();
+
+    const atiendeHoy = especialista.diasSemana.includes(diaSemana);
 
     this.slotsHorarios = this.HORAS_CLINICAS.map(hora => {
+      const horaNum = parseInt(hora.slice(0, 2), 10);
+      const dentroDeHorario = atiendeHoy && horaNum >= especialista.horaInicio && horaNum < especialista.horaFin;
+
       const fechaHoraIso = `${fecha}T${hora}`;
       const ocupada = todasLasCitas.some(
         c => c.fechaHora === fechaHoraIso && c.estado !== EstadoCita.CANCELADA
       );
 
+      let disponible = dentroDeHorario && !ocupada;
+      let motivoOcupado: string | undefined = undefined;
+
+      if (!atiendeHoy) {
+        motivoOcupado = `No atiende ${this.getNombreDiaSemana(diaSemana)}`;
+      } else if (horaNum < especialista.horaInicio || horaNum >= especialista.horaFin) {
+        motivoOcupado = 'Fuera del turno de atención';
+      } else if (ocupada) {
+        motivoOcupado = 'Turno ya ocupado';
+      }
+
       return {
         hora,
-        disponible: !ocupada,
-        motivoOcupado: ocupada ? 'Turno no disponible' : undefined
+        disponible,
+        motivoOcupado
       };
     });
+  }
+
+  private getNombreDiaSemana(dia: number): string {
+    const dias = ['domingos', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábados'];
+    return dias[dia] || 'este día';
   }
 
   public reservarCita(): void {

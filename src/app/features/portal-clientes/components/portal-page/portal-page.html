@@ -281,7 +281,7 @@
                   <span>Médico Veterinario o Especialidad Preferida (Opcional)</span>
                   <span class="badge bg-success-subtle text-success border border-success-subtle">Disponibilidad rotativa</span>
                 </label>
-                <select id="selectEspecialista" class="form-select" formControlName="especialistaId">
+                <select id="selectEspecialista" class="form-select" formControlName="especialistaId" (change)="onEspecialistaChange()">
                   @for (esp of ESPECIALISTAS; track esp.id) {
                     <option [value]="esp.id">
                       {{ esp.nombre }} &bull; {{ esp.especialidad }} ({{ esp.horarios }})

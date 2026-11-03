@@ -2,9 +2,9 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HistorialAtencion } from '../models';
-import { generarSemillasOctubre } from './seeds/octubre-seeds';
+import { generarSemillasNoviembre } from './seeds/octubre-seeds';
 
-const STORAGE_KEY_HISTORIAL = 'vet_historial_v3';
+const STORAGE_KEY_HISTORIAL = 'vet_historial_v4_noviembre';
 
 @Injectable({
   providedIn: 'root'
@@ -39,7 +39,7 @@ export class HistorialService {
   }
 
   private generarSemillas(): HistorialAtencion[] {
-    return generarSemillasOctubre().historial;
+    return generarSemillasNoviembre().historial;
   }
 
   private guardarEnStorage(historial: HistorialAtencion[]): void {

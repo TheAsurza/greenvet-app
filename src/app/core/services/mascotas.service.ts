@@ -16,7 +16,7 @@ export interface MascotaRaw {
   fichaClinica?: Partial<FichaClinicaBasica>;
 }
 
-const STORAGE_KEY_MASCOTAS = 'vet_mascotas_v3';
+const STORAGE_KEY_MASCOTAS = 'vet_mascotas_v4_noviembre';
 
 @Injectable({
   providedIn: 'root'

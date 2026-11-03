@@ -2,9 +2,9 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Cita, EstadoCita, MotivoConsulta } from '../models';
-import { generarSemillasOctubre } from './seeds/octubre-seeds';
+import { generarSemillasNoviembre } from './seeds/octubre-seeds';
 
-const STORAGE_KEY_CITAS = 'vet_citas_v3';
+const STORAGE_KEY_CITAS = 'vet_citas_v4_noviembre';
 
 @Injectable({
   providedIn: 'root'
@@ -39,7 +39,7 @@ export class CitasService {
   }
 
   private generarSemillas(): Cita[] {
-    return generarSemillasOctubre().citas;
+    return generarSemillasNoviembre().citas;
   }
 
   private guardarEnStorage(citas: Cita[]): void {
